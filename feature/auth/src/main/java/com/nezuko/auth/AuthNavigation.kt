@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 import com.nezuko.ui.theme.Screen
 import kotlinx.serialization.Serializable
 
-@Serializable
+    @Serializable
 object Auth
 
 fun NavController.navigateToAuth(
