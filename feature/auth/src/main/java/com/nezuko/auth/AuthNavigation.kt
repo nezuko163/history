@@ -1,42 +1,104 @@
 package com.nezuko.auth
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.nezuko.ui.theme.Screen
+import com.nezuko.auth.routes.AuthRoute
+import com.nezuko.auth.routes.LoginRoute
+import com.nezuko.auth.routes.RegisterRoute
 import kotlinx.serialization.Serializable
 
-    @Serializable
-object Auth
+@Serializable
+object Start
 
 fun NavController.navigateToAuth(
     navOptions: NavOptionsBuilder.() -> Unit = {}
-) = navigate(Screen.Auth.route, navOptions)
+) = navigate(Start, navOptions)
 
 fun NavGraphBuilder.authScreen(
-    onSuccessAuth: () -> Unit
-) = composable<Auth>(
+    onNavigateToLoginScreen: () -> Unit,
+    onNavigateToRegisterScreen: () -> Unit,
+) = composable<Start>(
     enterTransition = {
-        slideInHorizontally(
-            initialOffsetX = { it / 6 }
-        ) + fadeIn()
+        slideInHorizontally(initialOffsetX = { it })
     },
     exitTransition = {
-        fadeOut()
+        slideOutHorizontally(targetOffsetX = { -it })
     },
     popEnterTransition = {
-        fadeIn()
+        slideInHorizontally(initialOffsetX = { -it })
     },
     popExitTransition = {
-        slideOutHorizontally(
-            targetOffsetX = { it / 6 }
-        ) + fadeOut()
-    },
+        slideOutHorizontally(targetOffsetX = { it })
+    }
+
 ) {
-    AuthRoute(onSuccessAuth)
+
+    AuthRoute(
+        onNavigateToLoginScreen = onNavigateToLoginScreen,
+        onNavigateToRegisterScreen = onNavigateToRegisterScreen
+    )
+}
+
+@Serializable
+object Login
+
+fun NavController.navigateToLogin(
+    navOptions: NavOptionsBuilder.() -> Unit = {}
+) = navigate(Login, navOptions)
+
+fun NavGraphBuilder.loginScreen(
+    onNavigateBack: () -> Unit,
+    onAuthSuccess: () -> Unit
+) = composable<Login>(
+    enterTransition = {
+        slideInHorizontally(initialOffsetX = { it })
+    },
+    exitTransition = {
+        slideOutHorizontally(targetOffsetX = { -it })
+    },
+    popEnterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    },
+    popExitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }
+) {
+    LoginRoute(
+        onNavigateBack = onNavigateBack,
+        onAuthSuccess = onAuthSuccess
+    )
+}
+
+@Serializable
+object Register
+
+fun NavController.navigateToRegister(
+    navOptions: NavOptionsBuilder.() -> Unit = {}
+) = navigate(Register, navOptions)
+
+fun NavGraphBuilder.registerScreen(
+    onNavigateBack: () -> Unit,
+    onAuthSuccess: () -> Unit
+) = composable<Register>(
+    enterTransition = {
+        slideInHorizontally(initialOffsetX = { it })
+    },
+    exitTransition = {
+        slideOutHorizontally(targetOffsetX = { -it })
+    },
+    popEnterTransition = {
+        slideInHorizontally(initialOffsetX = { -it })
+    },
+    popExitTransition = {
+        slideOutHorizontally(targetOffsetX = { it })
+    }
+) {
+    RegisterRoute(
+        onNavigateBack = onNavigateBack,
+        onAuthSuccess = onAuthSuccess
+    )
 }

@@ -19,9 +19,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.nezuko.ui.theme.Spacing
 
 @Composable
-internal fun ResgisterScreen(
+fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onRegisterButtonClick: () -> Unit
+    onRegisterButtonClick: (email: String, password: String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var userName by remember { mutableStateOf("") }
@@ -61,7 +61,7 @@ internal fun ResgisterScreen(
             Spacer(modifier = Modifier.padding(Spacing.default.medium))
 
             FilledTonalButton(
-                onClick = onRegisterButtonClick,
+                onClick = { onRegisterButtonClick(email, password) },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = "Войти")

@@ -2,6 +2,7 @@ package com.nezuko.auth.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,6 +66,7 @@ fun StartScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .border(2.dp, Color.Black)
             .background(LightBlue)
     ) {
         Column(

@@ -1,6 +1,7 @@
 [versions]
 agp = "8.5.2"
-kotlin = "2.0.20"
+firebaseBom = "33.5.1"
+kotlin = "2.0.21"
 coreKtx = "1.13.1"
 kotlinxSerializationJson = "1.7.3"
 lifecycleRuntimeKtx = "2.8.7"
@@ -9,13 +10,13 @@ composeBom = "2024.10.01"
 coilCompose = "2.7.0"
 hiltAndroid = "2.51.1"
 hiltNavigationCompose = "1.2.0"
-navigationCompose = "2.8.0-beta04"
+navigationCompose = "2.8.3"
 appcompat = "1.7.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 material = "1.12.0"
-
+coreSplashscreen = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-common = { module = "com.google.firebase:firebase-common" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -40,12 +44,14 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }

@@ -5,6 +5,7 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -58,6 +59,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":feature:auth"))
     implementation(project(":feature:home"))
+    implementation(project(":feature:profile"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -78,4 +80,10 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.common)
+
+    // SplashSceren
+    implementation(libs.androidx.core.splashscreen)
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "333393732958",
+    "project_id": "history-proj-nezuko",
+    "storage_bucket": "history-proj-nezuko.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333393732958:android:a7907752570fb5b0cd1bcf",
+        "android_client_info": {
+          "package_name": "com.nezuko.history"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVrlUYnikBVSebjtiNh4CnPDa0eh5laUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -21,7 +21,7 @@ import com.nezuko.ui.theme.Spacing
 @Composable
 internal fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginButtonClick: () -> Unit
+    onLoginButtonClick: (email: String, password: String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -52,7 +52,7 @@ internal fun LoginScreen(
             Spacer(modifier = Modifier.padding(Spacing.default.medium))
 
             FilledTonalButton(
-                onClick = onLoginButtonClick,
+                onClick = { onLoginButtonClick(email, password) },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = "Войти")

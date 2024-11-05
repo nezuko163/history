@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -33,6 +37,14 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:domain"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 }

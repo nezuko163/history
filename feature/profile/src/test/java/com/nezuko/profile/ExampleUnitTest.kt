@@ -1,4 +1,4 @@
-package com.nezuko.ui
+package com.nezuko.profile
 
 import org.junit.Test
 

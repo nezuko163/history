@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.plugin.serialization")
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
@@ -58,5 +59,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
 
+    implementation(libs.kotlinx.serialization.json)
 }
