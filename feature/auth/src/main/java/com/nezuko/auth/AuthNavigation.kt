@@ -36,7 +36,6 @@ fun NavGraphBuilder.authScreen(
     }
 
 ) {
-
     AuthRoute(
         onNavigateToLoginScreen = onNavigateToLoginScreen,
         onNavigateToRegisterScreen = onNavigateToRegisterScreen

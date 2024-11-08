@@ -75,7 +75,7 @@ fun HistoryApp(
     ) { padding ->
         Log.i(TAG, "HistoryApp: $padding")
         NavHost(
-            modifier = modifier,
+            modifier = modifier.padding(bottom = padding.calculateBottomPadding()),
             navController = navController,
             startDestination = startDestination,
             enterTransition = { EnterTransition.None },
@@ -176,7 +176,6 @@ fun BottomNavigationBar(
                 ),
                 icon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) }
             )
-
         }
     }
 }

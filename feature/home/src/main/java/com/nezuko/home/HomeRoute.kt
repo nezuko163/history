@@ -7,5 +7,10 @@ import androidx.compose.ui.Modifier
 fun HomeRoute(
     modifier: Modifier = Modifier,
 ) {
-    HomeScreen()
+    HomeScreen(
+        modifier = modifier,
+        onPlayButtonClick = {
+    
+        }
+    )
 }

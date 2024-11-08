@@ -21,7 +21,7 @@ import com.nezuko.ui.theme.Spacing
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onRegisterButtonClick: (email: String, password: String) -> Unit
+    onRegisterButtonClick: (email: String, name: String, password: String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var userName by remember { mutableStateOf("") }
@@ -61,7 +61,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.padding(Spacing.default.medium))
 
             FilledTonalButton(
-                onClick = { onRegisterButtonClick(email, password) },
+                onClick = { onRegisterButtonClick(email, userName, password) },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = "Войти")

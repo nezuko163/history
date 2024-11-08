@@ -18,8 +18,8 @@ fun RegisterRoute(
     val context = LocalContext.current
     RegisterScreen(
         modifier = modifier
-    ) { email, password ->
-        vm.createUserWithEmailAndPassword(email, password)
+    ) { email, name, password ->
+        vm.createUserWithEmailAndPassword(email, name, password)
         Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
     }
 }

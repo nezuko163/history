@@ -8,8 +8,11 @@ interface AuthRepository {
 
     fun onCreate()
     fun onDestroy()
-    suspend fun getCurrentUser()
+    suspend fun getCurrentUser(): String?
     fun signOut()
-    suspend fun signInWithEmailAndPassword(email: String, password: String)
-    suspend fun createUserWithEmailAndPassword(email: String, password: String)
+    suspend fun signInWithEmailAndPassword(email: String, password: String): String?
+    suspend fun createUserWithEmailAndPassword(
+        email: String,
+        password: String,
+    ): String
 }
