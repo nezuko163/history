@@ -18,17 +18,7 @@ class RemoteStorageRepositoryImpl @Inject constructor(
     private val remoteSource: RemoteSource,
     @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher
 ) : RemoteStorageRepository {
-
-    override fun onCreate() {
-    }
-
-    override fun onDestroy() {
-
-    }
-
-
     override suspend fun uploadPhotoUrl(uri: Uri) = remoteSource.uploadFileToYandexS3(uri)
-
 
     override suspend fun downloadPhotoUrl(imageName: String): String {
         return withContext(IODispatcher) {

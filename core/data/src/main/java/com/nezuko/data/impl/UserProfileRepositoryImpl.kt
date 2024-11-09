@@ -2,10 +2,7 @@ package com.nezuko.data.impl
 
 import android.content.Context
 import android.util.Log
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.ResultModel
@@ -25,11 +22,10 @@ import kotlin.coroutines.resumeWithException
 
 class UserProfileRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher
+    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
+    private val db: FirebaseDatabase
 ) : UserProfileRepository {
-    private lateinit var db: FirebaseDatabase
-
-    private lateinit var users: DatabaseReference
+    private val users = db.getReference("users2")
 
     private val _me = MutableStateFlow<ResultModel<UserProfile>>(ResultModel.loading())
     override val me = _me.asStateFlow()
@@ -37,11 +33,6 @@ class UserProfileRepositoryImpl @Inject constructor(
     @Volatile
     private var _uid = ""
     override val uid = _uid
-
-    override fun onStart() {
-        db = Firebase.database
-        users = db.getReference("users2")
-    }
 
     override fun setUid(uid: String) {
         Log.i(TAG, "setUid: $uid")

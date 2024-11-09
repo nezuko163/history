@@ -1,9 +1,11 @@
 package com.nezuko.data.di
 
 import com.nezuko.data.impl.AuthRepositoryImpl
+import com.nezuko.data.impl.MatchmakingRepositoryImpl
 import com.nezuko.data.impl.RemoteStorageRepositoryImpl
 import com.nezuko.data.impl.UserProfileRepositoryImpl
 import com.nezuko.domain.repository.AuthRepository
+import com.nezuko.domain.repository.MatchmakingRepository
 import com.nezuko.domain.repository.RemoteStorageRepository
 import com.nezuko.domain.repository.UserProfileRepository
 import dagger.Binds
@@ -27,4 +29,7 @@ interface DataModule {
     @Singleton
     fun bindRemoteStorageRepo(impl: RemoteStorageRepositoryImpl): RemoteStorageRepository
 
+    @Binds
+    @Singleton
+    fun bindMatchmakingSearchRepo(impl: MatchmakingRepositoryImpl): MatchmakingRepository
 }

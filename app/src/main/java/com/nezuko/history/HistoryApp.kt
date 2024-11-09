@@ -34,6 +34,8 @@ import com.nezuko.auth.loginScreen
 import com.nezuko.auth.navigateToLogin
 import com.nezuko.auth.navigateToRegister
 import com.nezuko.auth.registerScreen
+import com.nezuko.duel.navigation.duelScreen
+import com.nezuko.duel.navigation.navigateToDuel
 import com.nezuko.home.navigation.Home
 import com.nezuko.home.navigation.homeScreen
 import com.nezuko.home.navigation.navigateToHome
@@ -108,9 +110,19 @@ fun HistoryApp(
                 }
             )
 
-            homeScreen()
+            homeScreen(
+                onNavigateToDuel = { room ->
+                    navController.navigateToDuel(roomId = room.id)
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
 
             profileScreen()
+
+            duelScreen(
+            )
         }
     }
 }

@@ -20,8 +20,6 @@ class MainViewModel @Inject constructor(
 
     fun onCreate() {
         authRepository.onCreate()
-        userProfileRepository.onStart()
-        remoteStorageRepository.onCreate()
     }
 
     fun getCurrentUser() {

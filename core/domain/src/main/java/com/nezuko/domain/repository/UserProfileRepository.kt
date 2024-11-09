@@ -8,7 +8,6 @@ interface UserProfileRepository {
     val me: StateFlow<ResultModel<UserProfile>>
     val uid: String
 
-    fun onStart()
     fun setUid(uid: String)
     fun setAvatarUrl(url: String)
 

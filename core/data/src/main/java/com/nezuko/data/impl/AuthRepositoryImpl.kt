@@ -6,8 +6,6 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.ResultModel
@@ -26,9 +24,10 @@ import kotlin.coroutines.resumeWithException
 
 class AuthRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher
+    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
+    private val auth: FirebaseAuth
 ) : AuthRepository {
-    private lateinit var auth: FirebaseAuth
+
     private lateinit var authStateListener: AuthStateListener
     private lateinit var tokenIdListener: FirebaseAuth.IdTokenListener
 
@@ -38,8 +37,6 @@ class AuthRepositoryImpl @Inject constructor(
     private var isLoaded = false
 
     override fun onCreate() {
-        auth = Firebase.auth
-
         authStateListener = AuthStateListener { firebaseAuth: FirebaseAuth ->
             val user = firebaseAuth.currentUser
             Log.i(TAG, "onCreate: user.id - ${user?.uid}")
@@ -67,19 +64,14 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override fun onDestroy() {
-        if (::auth.isInitialized) {
-            if (::authStateListener.isInitialized) {
-                auth.removeAuthStateListener(authStateListener)
-            }
-            if (::tokenIdListener.isInitialized) {
-                auth.removeIdTokenListener(tokenIdListener)
-            }
-        } else {
-            Log.i(TAG, "onDestroy: auth isn't init")
-            return
-
+        if (::authStateListener.isInitialized) {
+            auth.removeAuthStateListener(authStateListener)
+        }
+        if (::tokenIdListener.isInitialized) {
+            auth.removeIdTokenListener(tokenIdListener)
         }
     }
+
 
     override suspend fun getCurrentUser(): String? {
         isLoaded = true
@@ -120,19 +112,10 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override fun signOut() {
-        if (!::auth.isInitialized) {
-            Log.i(TAG, "signOut: auth isn't init")
-            return
-        }
-
         auth.signOut()
     }
 
     override suspend fun signInWithEmailAndPassword(email: String, password: String): String? {
-        if (!::auth.isInitialized) {
-            Log.i(TAG, "signInWithEmailAndPassword: auth isn't init")
-            return null
-        }
         return withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
                 auth.signInWithEmailAndPassword(email, password)
@@ -160,12 +143,6 @@ class AuthRepositoryImpl @Inject constructor(
         email: String,
         password: String,
     ): String {
-        Log.i(TAG, "createUserWithEmailAndPassword: $email, $password")
-        if (!::auth.isInitialized) {
-            Log.i(TAG, "createUserWithEmailAndPassword: auth isn't init")
-            return ""
-        }
-
         return withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
                 auth.createUserWithEmailAndPassword(email, password)
