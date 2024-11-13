@@ -6,6 +6,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
@@ -39,6 +40,9 @@ import com.nezuko.duel.navigation.navigateToDuel
 import com.nezuko.home.navigation.Home
 import com.nezuko.home.navigation.homeScreen
 import com.nezuko.home.navigation.navigateToHome
+import com.nezuko.learning.navigation.Learning
+import com.nezuko.learning.navigation.learningScreen
+import com.nezuko.learning.navigation.navigateToLearning
 import com.nezuko.profile.navigation.Profile
 import com.nezuko.profile.navigation.navigateToProfile
 import com.nezuko.profile.navigation.profileScreen
@@ -61,6 +65,7 @@ fun HistoryApp(
     val currentRouteReal = currentBackStackEntry?.destination?.route
     Log.i(TAG, "HistoryApp: $currentRouteReal")
     val bottomBarVisible = when (currentRouteReal) {
+        "com.nezuko.learning.navigation.Learning" -> true
         "com.nezuko.home.navigation.Home" -> true
         "com.nezuko.profile.navigation.Profile" -> true
         else -> false
@@ -121,8 +126,9 @@ fun HistoryApp(
 
             profileScreen()
 
-            duelScreen(
-            )
+            duelScreen()
+
+            learningScreen()
         }
     }
 }
@@ -136,7 +142,6 @@ fun BottomNavigationBar(
     Log.i(TAG, "BottomNavigationBar: $currentRoute")
 
     Column {
-
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 30.dp),
             thickness = 1.dp,
@@ -147,6 +152,26 @@ fun BottomNavigationBar(
             modifier = Modifier,
             containerColor = Color.Transparent,
         ) {
+            NavigationBarItem(
+                selected = currentRoute is Learning,
+                onClick = {
+                    changeRoute(Learning)
+                    navController.navigateToLearning {
+                        popUpTo(0)
+                    }
+                },
+                label = {
+                    Text(text = "Обучение")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = LightBlue,
+                    selectedTextColor = LightBlue,
+                    indicatorColor = Color.Transparent,
+                    unselectedIconColor = GrayText,
+                    unselectedTextColor = GrayText
+                ),
+                icon = { Icon(imageVector = Icons.Default.Build, contentDescription = null) }
+            )
             NavigationBarItem(
                 selected = currentRoute is Home,
                 onClick = {
@@ -167,6 +192,7 @@ fun BottomNavigationBar(
                 ),
                 icon = { Icon(imageVector = Icons.Default.Home, contentDescription = null) }
             )
+
 
             NavigationBarItem(
                 selected = currentRoute is Profile,

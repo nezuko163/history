@@ -14,47 +14,64 @@ import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.model.UserProfile
 import com.nezuko.domain.repository.MatchmakingRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class MatchmakingRepositoryImpl @Inject constructor(
     private val db: FirebaseDatabase,
-    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher
+    @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
+    @Dispatcher(MyDispatchers.Main) private val MainDispatcher: CoroutineDispatcher
 ) : MatchmakingRepository {
     private val TAG = "MatchmakingSearchRepositoryImpl"
     private val rooms = db.getReference("rooms")
     private val searchingPlayers = db.getReference("searchingPlayers")
 
 
-    private var currentGameId: String? = null
+    private val _currentRoom = MutableStateFlow<RoomModel?>(null)
+    override val currentRoom = _currentRoom.asStateFlow()
 
+    private val _isSearching = MutableStateFlow<Boolean>(false)
+    override val isSearching = _isSearching.asStateFlow()
+
+
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startSearch(
         user: UserProfile,
         onRoomCreated: (room: RoomModel) -> Unit,
         onGameEnd: (room: RoomModel) -> Unit
     ) {
+        _isSearching.update { true }
         searchFreeRooms(user.id)
 
         rooms.ref.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                if (currentGameId != null) return
+                if (_currentRoom.value != null) return
                 Log.i(TAG, "onChildAdded: snapshot $snapshot")
                 val room = snapshot.getValue<RoomModel>()
                 if (room == null) {
                     Log.e(TAG, "onChildAdded: room = null")
                     throw RuntimeException("onChildAdded: room = null")
                 }
-                if (room.player1 == user.id) {
+
+                if (room.player1 == user.id || room.player2 == user.id) {
+                    if (_isSearching.value) {
+                        _isSearching.update { false }
+                    }
                     onRoomCreated(room)
-                    currentGameId = room.id
-                } else if (room.player2 == user.id) {
-                    onRoomCreated(room)
-                    currentGameId = room.id
+                    _currentRoom.update { room }
                 }
+
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -67,11 +84,8 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     Log.e(TAG, "onChildRemoved: room = null")
                     throw RuntimeException("onChildRemoved: room = null")
                 }
-                if (room.player1 == user.id) {
-                    currentGameId = null
-                    onGameEnd(room)
-                } else if (room.player2 == user.id) {
-                    currentGameId = null
+                if (room.player1 == user.id || room.player2 == user.id) {
+                    _currentRoom.update { null }
                     onGameEnd(room)
                 }
                 rooms.ref.removeEventListener(this)
@@ -156,21 +170,25 @@ class MatchmakingRepositoryImpl @Inject constructor(
     }
 
     override suspend fun endGame() = withContext(IODispatcher) {
-        val room = getRoom(currentGameId!!)
         suspendCancellableCoroutine { continuation ->
-            rooms.child(currentGameId!!).removeValue()
-                .addOnSuccessListener {
-                    continuation.resume(room)
-                }
-                .addOnFailureListener { e ->
-                    e.printStackTrace()
-                    continuation.resumeWithException(e)
-                }
-                .addOnCanceledListener {
-                    continuation.cancel()
-                }
+            if (_currentRoom.value == null) {
+                continuation.resumeWithException(RuntimeException("игра не началась"))
+            } else {
+                rooms.child(_currentRoom.value!!.id).removeValue()
+                    .addOnSuccessListener {
+                        continuation.resume(_currentRoom.value)
+                    }
+                    .addOnFailureListener { e ->
+                        e.printStackTrace()
+                        continuation.resumeWithException(e)
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel()
+                    }
+            }
         }
     }
+
 
     private suspend fun getRoom(roomId: String) = withContext(IODispatcher) {
         suspendCancellableCoroutine { continuation ->
@@ -191,4 +209,51 @@ class MatchmakingRepositoryImpl @Inject constructor(
                 }
         }
     }
+
+    override suspend fun stopSearch(
+        user: UserProfile,
+        onStopSearch: () -> Unit,
+    ) {
+        val coroutineContext = coroutineContext
+        withContext(IODispatcher) {
+            suspendCancellableCoroutine { continuation ->
+                searchingPlayers.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+//                        val players = currentData.value as? HashSet<String> ?: hashSetOf()
+                        val players = currentData.value as? ArrayList<String> ?: arrayListOf()
+
+                        Log.i(TAG, "doTransaction: $players")
+
+                        if (players.contains(user.id)) {
+                            players.remove(user.id)
+                            currentData.value = players
+                            CoroutineScope(coroutineContext).launch(MainDispatcher) {
+                                onStopSearch()
+                            }
+                        }
+
+                        if (_isSearching.value) {
+                            _isSearching.update { false }
+                        }
+
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(
+                        error: DatabaseError?,
+                        committed: Boolean,
+                        currentData: DataSnapshot?
+                    ) {
+                        if (error != null) {
+                            continuation.resumeWithException(error.toException())
+                            return
+                        }
+                        Log.i(TAG, "stopSearch - onComplete: data - $currentData")
+                        continuation.resume(committed)
+                    }
+                })
+            }
+        }
+    }
+
 }

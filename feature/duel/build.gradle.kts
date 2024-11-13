@@ -50,6 +50,8 @@ dependencies {
     implementation(project(":core:ui"))
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.ui.tooling.preview.android)
+    debugImplementation(libs.androidx.ui.tooling)
     ksp(libs.hilt.android.compiler)
 
     implementation(libs.androidx.core.ktx)

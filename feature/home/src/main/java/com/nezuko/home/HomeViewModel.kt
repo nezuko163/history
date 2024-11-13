@@ -16,6 +16,8 @@ class HomeViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository
 ) : ViewModel() {
     val me = userProfileRepository.me
+    val isSearching = matchmakingRepository.isSearching
+
     fun startSearch(
         userProfile: UserProfile,
         onRoomCreated: (room: RoomModel) -> Unit,
@@ -26,6 +28,18 @@ class HomeViewModel @Inject constructor(
                 user = userProfile,
                 onRoomCreated = onRoomCreated,
                 onGameEnd = onGameEnd
+            )
+        }
+    }
+
+    fun stopSearch(
+        userProfile: UserProfile,
+        onSearchStopped: () -> Unit
+    ) {
+        viewModelScope.launch {
+            matchmakingRepository.stopSearch(
+                user = userProfile,
+                onStopSearch = onSearchStopped
             )
         }
     }

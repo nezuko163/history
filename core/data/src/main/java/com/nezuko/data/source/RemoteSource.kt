@@ -12,7 +12,6 @@ import com.nezuko.data.di.MyDispatchers
 import com.nezuko.data.getInputStreamFromUri
 import com.nezuko.data.source.amazon.ApiRoute.BUCKET_NAME
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -24,7 +23,6 @@ class RemoteSource @Inject constructor(
     @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
     private val s3Client: AmazonS3Client,
-    private val httpClient: HttpClient,
     private val transferUtility: TransferUtility,
 ) {
     private val TAG = "RemoteSource"

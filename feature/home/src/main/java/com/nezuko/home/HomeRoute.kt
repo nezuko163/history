@@ -17,22 +17,40 @@ fun HomeRoute(
     onNavigateBack: () -> Unit
 ) {
     val me by vm.me.collectAsState()
+    val isSearching by vm.isSearching.collectAsState()
     val context = LocalContext.current
+
+    val startSearch = {
+        vm.startSearch(
+            userProfile = me.data!!,
+            onRoomCreated = { room ->
+                Toast.makeText(context, room.toString(), Toast.LENGTH_SHORT).show()
+                onNavigateToDuel(room)
+            },
+            onGameEnd = { room ->
+                Toast.makeText(context, "игра ${room.id} закончена", Toast.LENGTH_SHORT).show()
+                onNavigateBack()
+            }
+        )
+    }
+    val stopSearch = {
+        vm.stopSearch(
+            userProfile = me.data!!,
+            onSearchStopped = {
+                Toast.makeText(context, "поиск закончен", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    val onPlayButtonClick: () -> Unit = if (isSearching) {
+        stopSearch
+    } else {
+        startSearch
+    }
 
     HomeScreen(
         modifier = modifier,
-        onPlayButtonClick = {
-            vm.startSearch(
-                userProfile = me.data!!,
-                onRoomCreated = { room ->
-                    Toast.makeText(context, room.toString(), Toast.LENGTH_SHORT).show()
-                    onNavigateToDuel(room)
-                },
-                onGameEnd = { room ->
-                    Toast.makeText(context, "игра ${room.id} закончена", Toast.LENGTH_SHORT).show()
-                    onNavigateBack()
-                }
-            )
-        }
+        isSearching = isSearching,
+        onPlayButtonClick = onPlayButtonClick
     )
 }
