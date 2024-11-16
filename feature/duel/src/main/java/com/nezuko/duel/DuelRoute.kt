@@ -16,8 +16,8 @@ private const val TAG = "DuelRoute"
 
 @Composable
 fun DuelRoute(
+    onNavigateToQuestion: () -> Unit,
     modifier: Modifier = Modifier,
-    roomId: String,
     vm: DuelViewModel = hiltViewModel()
 ) {
     val currentRoom by vm.currentRoom.collectAsState()
@@ -40,6 +40,9 @@ fun DuelRoute(
         }
     }
 
+    Log.i(TAG, "DuelRoute: opponent - $opponent")
+    Log.i(TAG, "DuelRoute: questions - $questions")
+
     if (opponent == null || questions == null) {
         Box(modifier = modifier.fillMaxSize()) {
             Text(text = "загрузка", modifier = Modifier.align(Alignment.Center))
@@ -52,7 +55,8 @@ fun DuelRoute(
             opponent = opponent!!,
             onButtonEndGameClick = {
                 vm.endGame()
-            }
+            },
+            onQuestionButtonClick = onNavigateToQuestion
         )
     }
 }

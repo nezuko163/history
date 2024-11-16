@@ -10,7 +10,5 @@ data class QuestionModel(
     val isOneRightAnswer: Boolean
         get() = answers.size == 1
     fun setId(id: String) = copy(id = id)
-    fun setTheme(theme: String = "ALL"): QuestionModel {
-        return copy(theme = theme)
-    }
+    fun setTheme(theme: String = "ALL") = copy(theme = theme)
 }

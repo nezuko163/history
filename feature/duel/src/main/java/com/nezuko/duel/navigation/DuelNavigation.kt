@@ -4,7 +4,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.nezuko.duel.DuelRoute
 import kotlinx.serialization.Serializable
 
@@ -17,9 +16,9 @@ fun NavController.navigateToDuel(
 ) = navigate(Duel(roomId), navOptions)
 
 fun NavGraphBuilder.duelScreen(
+    onNavigateToQuestion: () -> Unit
 ) = composable<Duel> { backStackEntry ->
-    val route: Duel = backStackEntry.toRoute()
     DuelRoute(
-        roomId = route.roomId
+        onNavigateToQuestion = onNavigateToQuestion
     )
 }

@@ -73,9 +73,16 @@ class MatchmakingRepositoryImpl @Inject constructor(
                         _isSearching.update { false }
                     }
                     onRoomCreated(room)
-                    _currentRoom.update { room }
-                }
 
+                    if (_currentRoom.value != null) return
+
+                    _currentRoom.update { room }
+                    CoroutineScope(IODispatcher).launch {
+                        _questions.update {
+                            questionRepository.findQuestionsById(room.questionsList)
+                        }
+                    }
+                }
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -88,10 +95,20 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     Log.e(TAG, "onChildRemoved: room = null")
                     throw RuntimeException("onChildRemoved: room = null")
                 }
+
+                if (_currentRoom.value != null) {
+                    if (_currentRoom.value!!.id == room.id) return
+                }
+
                 if (room.player1 == user.id || room.player2 == user.id) {
                     _currentRoom.update { null }
                     onGameEnd(room)
                 }
+
+                if (_questions.value != null) _questions.update { null }
+                if (_currentRoom.value != null) _currentRoom.update { null }
+                if (_isSearching.value) _isSearching.update { false }
+
                 rooms.ref.removeEventListener(this)
             }
 
@@ -105,9 +122,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
         })
     }
 
-    private suspend fun searchFreeRooms(
-        playerId: String,
-    ) =
+    private suspend fun searchFreeRooms(playerId: String) =
         withContext(IODispatcher) {
             suspendCoroutine { continuation ->
                 var key: String? = null
@@ -165,6 +180,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
         Log.i(TAG, "createRoom: end")
 
+
         val newRoom = RoomModel(
             id = newRoomRef.key!!,
             player1 = playerId1,
@@ -176,7 +192,6 @@ class MatchmakingRepositoryImpl @Inject constructor(
         newRoomRef.setValue(newRoom)
             .addOnSuccessListener {
                 Log.i(TAG, "createRoom: ураааа создана")
-                _questions.update { questions }
             }
             .addOnFailureListener { e ->
                 e.printStackTrace()

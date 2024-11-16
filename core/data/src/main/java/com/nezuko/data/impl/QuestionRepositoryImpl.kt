@@ -9,7 +9,12 @@ import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.repository.QuestionRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -78,12 +83,13 @@ class QuestionRepositoryImpl @Inject constructor(
                     }
                 }
 
+                Log.i(TAG, "generateQuestions: end question")
+
                 questionTask
                     .addOnSuccessListener { task ->
                         val allQuestions = task.children.mapNotNull { dataSnapshot ->
                             dataSnapshot.getValue(QuestionModel::class.java)
                         }
-
                         continuation.resume(allQuestions.shuffled().take(count))
                     }
                     .addOnFailureListener { e ->
@@ -95,4 +101,44 @@ class QuestionRepositoryImpl @Inject constructor(
                     }
             }
         }
+
+    override suspend fun findQuestionById(id: String) = withContext(IODispatcher) {
+        suspendCancellableCoroutine { continuation ->
+            Log.i(TAG, "findQuestionById: id - $id")
+            questionsRef.ref.orderByPriority().get()
+                .addOnSuccessListener { snapshot ->
+                    if (!snapshot.exists()) {
+                        throw RuntimeException("find question by id: snapshot empty")
+                    }
+
+                    Log.i(TAG, "findQuestionById: snapshot - $snapshot")
+                    val a = snapshot.children.mapNotNull {
+                        it.getValue(QuestionModel::class.java)
+                    }.find { it.id == id }
+                    Log.i(TAG, "findQuestionById: questions - $a")
+                    if (a == null) throw RuntimeException("вопрос не найден")
+                    continuation.resume(a)
+                }
+                .addOnFailureListener { e ->
+                    e.printStackTrace()
+                    continuation.resumeWithException(e)
+                }
+                .addOnCanceledListener {
+                    continuation.cancel()
+                }
+        }
+    }
+
+    override suspend fun findQuestionsById(listId: List<String>): List<QuestionModel> {
+        val semaphore = Semaphore(10)
+        return coroutineScope {
+            listId.map { id ->
+                async {
+                    semaphore.withPermit {
+                        findQuestionById(id)
+                    }
+                }
+            }
+        }.awaitAll()
+    }
 }

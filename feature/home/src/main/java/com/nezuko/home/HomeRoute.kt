@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 
 private const val TAG = "HomeRoute"
@@ -25,17 +24,6 @@ fun HomeRoute(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        vm.insertQuestion(
-            QuestionModel(
-                description = "гавно",
-                variants = listOf(
-                    "неа",
-                    "да",
-                    "жопа"
-                ),
-                answers = listOf(0),
-            ).setTheme()
-        )
     }
 
     val startSearch = {

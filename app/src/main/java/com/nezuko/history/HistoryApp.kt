@@ -46,6 +46,8 @@ import com.nezuko.learning.navigation.navigateToLearning
 import com.nezuko.profile.navigation.Profile
 import com.nezuko.profile.navigation.navigateToProfile
 import com.nezuko.profile.navigation.profileScreen
+import com.nezuko.question.navigation.navigateToQuestion
+import com.nezuko.question.navigation.questionScreen
 import com.nezuko.ui.theme.GrayText
 import com.nezuko.ui.theme.LightBlue
 
@@ -126,9 +128,15 @@ fun HistoryApp(
 
             profileScreen()
 
-            duelScreen()
+            duelScreen(onNavigateToQuestion = {
+                navController.navigateToQuestion()
+            })
 
             learningScreen()
+
+            questionScreen(onNavigateBack = {
+
+            })
         }
     }
 }

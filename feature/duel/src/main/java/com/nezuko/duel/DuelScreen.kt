@@ -19,7 +19,8 @@ fun DuelScreen(
     modifier: Modifier = Modifier,
     me: UserProfile,
     opponent: UserProfile,
-    onButtonEndGameClick: () -> Unit
+    onButtonEndGameClick: () -> Unit,
+    onQuestionButtonClick: () -> Unit,
 ) {
     BackHandler {
 
@@ -32,6 +33,10 @@ fun DuelScreen(
     ) {
         // Spacer, заполняющий оставшееся место сверху
         Spacer(modifier = Modifier.weight(1f))
+
+        Button(onClick = onQuestionButtonClick) {
+            Text(text = "Перейти к вопросам")
+        }
 
         // Центральный элемент
         Button(onClick = onButtonEndGameClick) {
@@ -55,7 +60,7 @@ fun DuelScreen(
 @Preview
 @Composable
 private fun DuelScreenPreview() {
-    DuelScreen(me = UserProfile(), opponent = UserProfile()) {
-        
+    DuelScreen(me = UserProfile(), opponent = UserProfile(), onButtonEndGameClick = {}) {
+
     }
 }

@@ -8,4 +8,8 @@ interface QuestionRepository {
     suspend fun insertQuestion(questionModel: QuestionModel) : QuestionModel
 
     suspend fun generateQuestions(theme: String = "ALL", count: Int = 10): List<QuestionModel>
+
+    suspend fun findQuestionById(id: String): QuestionModel
+
+    suspend fun findQuestionsById(listId: List<String>): List<QuestionModel>
 }

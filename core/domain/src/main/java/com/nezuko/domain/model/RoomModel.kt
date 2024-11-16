@@ -8,7 +8,8 @@ data class RoomModel(
     val player1: String = "",
     val player2: String = "",
     val status: Status = Status.NONE,
-    val questionsList: List<String> = emptyList()
+    val questionsList: List<String> = emptyList(),
+    val usersAnswers: HashMap<String, HashMap<Int, List<Int>>> = hashMapOf()
 ) {
     enum class Status {
         NONE, WAITING, GAME, END
