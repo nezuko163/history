@@ -1,5 +1,6 @@
 package com.nezuko.duel
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -11,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 
+private const val TAG = "DuelRoute"
+
 @Composable
 fun DuelRoute(
     modifier: Modifier = Modifier,
@@ -20,6 +23,7 @@ fun DuelRoute(
     val currentRoom by vm.currentRoom.collectAsState()
     val me by vm.me.collectAsState()
     val opponent by vm.opponent.collectAsState()
+    val questions by vm.questions.collectAsState()
 
     if (currentRoom == null) {
         Box(modifier = modifier.fillMaxSize()) {
@@ -36,11 +40,12 @@ fun DuelRoute(
         }
     }
 
-    if (opponent == null) {
+    if (opponent == null || questions == null) {
         Box(modifier = modifier.fillMaxSize()) {
             Text(text = "загрузка", modifier = Modifier.align(Alignment.Center))
         }
     } else {
+        Log.i(TAG, "DuelRoute: $questions")
         DuelScreen(
             modifier = modifier,
             me = me.data!!,

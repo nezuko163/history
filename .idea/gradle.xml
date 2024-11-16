@@ -20,6 +20,7 @@
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/learning" />
             <option value="$PROJECT_DIR$/feature/profile" />
+            <option value="$PROJECT_DIR$/feature/question" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

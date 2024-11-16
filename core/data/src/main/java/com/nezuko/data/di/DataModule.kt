@@ -2,10 +2,12 @@ package com.nezuko.data.di
 
 import com.nezuko.data.impl.AuthRepositoryImpl
 import com.nezuko.data.impl.MatchmakingRepositoryImpl
+import com.nezuko.data.impl.QuestionRepositoryImpl
 import com.nezuko.data.impl.RemoteStorageRepositoryImpl
 import com.nezuko.data.impl.UserProfileRepositoryImpl
 import com.nezuko.domain.repository.AuthRepository
 import com.nezuko.domain.repository.MatchmakingRepository
+import com.nezuko.domain.repository.QuestionRepository
 import com.nezuko.domain.repository.RemoteStorageRepository
 import com.nezuko.domain.repository.UserProfileRepository
 import dagger.Binds
@@ -32,4 +34,8 @@ interface DataModule {
     @Binds
     @Singleton
     fun bindMatchmakingSearchRepo(impl: MatchmakingRepositoryImpl): MatchmakingRepository
+
+    @Binds
+    @Singleton
+    fun bindQuestionRepo(impl: QuestionRepositoryImpl): QuestionRepository
 }

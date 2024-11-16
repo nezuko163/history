@@ -1,5 +1,6 @@
 package com.nezuko.domain.repository
 
+import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.model.UserProfile
 import kotlinx.coroutines.flow.StateFlow
@@ -7,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface MatchmakingRepository {
     val currentRoom: StateFlow<RoomModel?>
     val isSearching: StateFlow<Boolean>
+    val questions: StateFlow<List<QuestionModel>?>
 
     suspend fun startSearch(
         user: UserProfile,

@@ -2,12 +2,16 @@ package com.nezuko.home
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
+
+private const val TAG = "HomeRoute"
 
 @Composable
 fun HomeRoute(
@@ -19,6 +23,20 @@ fun HomeRoute(
     val me by vm.me.collectAsState()
     val isSearching by vm.isSearching.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        vm.insertQuestion(
+            QuestionModel(
+                description = "гавно",
+                variants = listOf(
+                    "неа",
+                    "да",
+                    "жопа"
+                ),
+                answers = listOf(0),
+            ).setTheme()
+        )
+    }
 
     val startSearch = {
         vm.startSearch(

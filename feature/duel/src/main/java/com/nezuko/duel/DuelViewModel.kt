@@ -15,12 +15,14 @@ import javax.inject.Inject
 @HiltViewModel
 class DuelViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
-    private val matchmakingRepository: MatchmakingRepository
+    private val matchmakingRepository: MatchmakingRepository,
 ) : ViewModel() {
     val me = userProfileRepository.me
     private val _opponent = MutableStateFlow<UserProfile?>(null)
     val opponent = _opponent.asStateFlow()
+
     val currentRoom = matchmakingRepository.currentRoom
+    val questions = matchmakingRepository.questions
 
     fun endGame() {
         viewModelScope.launch {
