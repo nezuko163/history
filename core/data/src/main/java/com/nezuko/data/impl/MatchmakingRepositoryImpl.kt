@@ -68,18 +68,20 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     throw RuntimeException("onChildAdded: room = null")
                 }
 
+                if (room.status == RoomModel.Status.END) return
+
                 if (room.player1 == user.id || room.player2 == user.id) {
                     if (_isSearching.value) {
                         _isSearching.update { false }
                     }
                     onRoomCreated(room)
 
-                    if (_currentRoom.value != null) return
-
-                    _currentRoom.update { room }
-                    CoroutineScope(IODispatcher).launch {
-                        _questions.update {
-                            questionRepository.findQuestionsById(room.questionsList)
+                    if (_currentRoom.value == null) {
+                        _currentRoom.update { room }
+                        CoroutineScope(IODispatcher).launch {
+                            _questions.update {
+                                questionRepository.findQuestionsById(room.questionsList)
+                            }
                         }
                     }
                 }
@@ -87,22 +89,25 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 Log.i(TAG, "onChildChanged: snapshot - $snapshot")
-            }
 
-            override fun onChildRemoved(snapshot: DataSnapshot) {
                 val room = snapshot.getValue<RoomModel>()
                 if (room == null) {
-                    Log.e(TAG, "onChildRemoved: room = null")
-                    throw RuntimeException("onChildRemoved: room = null")
+                    Log.e(TAG, "onChildChanged: room = null")
+                    throw RuntimeException("onChildChanged: room = null")
                 }
+
+                Log.i(TAG, "onChildChanged: cur room - ${_currentRoom.value}")
 
                 if (_currentRoom.value != null) {
-                    if (_currentRoom.value!!.id == room.id) return
+                    if (_currentRoom.value!!.id != room.id) return
                 }
 
+                Log.i(TAG, "onChildChanged: room - $room")
+
                 if (room.player1 == user.id || room.player2 == user.id) {
-                    _currentRoom.update { null }
+                    Log.i(TAG, "onChildChanged: asd")
                     onGameEnd(room)
+                    _currentRoom.update { null }
                 }
 
                 if (_questions.value != null) _questions.update { null }
@@ -110,6 +115,10 @@ class MatchmakingRepositoryImpl @Inject constructor(
                 if (_isSearching.value) _isSearching.update { false }
 
                 rooms.ref.removeEventListener(this)
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                Log.i(TAG, "onChildRemoved: snapshot - $snapshot")
             }
 
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
@@ -209,9 +218,11 @@ class MatchmakingRepositoryImpl @Inject constructor(
             if (_currentRoom.value == null) {
                 continuation.resumeWithException(RuntimeException("игра не началась"))
             } else {
-                rooms.child(_currentRoom.value!!.id).removeValue()
+                rooms.child(_currentRoom.value!!.id).updateChildren(
+                    _currentRoom.value!!.copy(status = RoomModel.Status.END).toMap()
+                )
                     .addOnSuccessListener {
-                        continuation.resume(_currentRoom.value)
+                        continuation.resume(null)
                     }
                     .addOnFailureListener { e ->
                         e.printStackTrace()

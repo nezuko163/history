@@ -16,9 +16,9 @@ fun NavController.navigateToDuel(
 ) = navigate(Duel(roomId), navOptions)
 
 fun NavGraphBuilder.duelScreen(
-    onNavigateToQuestion: () -> Unit
+    onNavigateToQuestion: () -> Unit,
 ) = composable<Duel> { backStackEntry ->
     DuelRoute(
-        onNavigateToQuestion = onNavigateToQuestion
+        onNavigateToQuestion = onNavigateToQuestion,
     )
 }

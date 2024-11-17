@@ -35,7 +35,6 @@ fun ProfileScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-
             TopAppBar(
                 title = {
                     Text(

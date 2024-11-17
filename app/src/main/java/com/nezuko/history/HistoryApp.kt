@@ -35,6 +35,7 @@ import com.nezuko.auth.loginScreen
 import com.nezuko.auth.navigateToLogin
 import com.nezuko.auth.navigateToRegister
 import com.nezuko.auth.registerScreen
+import com.nezuko.duel.navigation.Duel
 import com.nezuko.duel.navigation.duelScreen
 import com.nezuko.duel.navigation.navigateToDuel
 import com.nezuko.home.navigation.Home
@@ -94,7 +95,7 @@ fun HistoryApp(
         ) {
             registerScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+
                 },
                 onAuthSuccess = {
 
@@ -105,7 +106,9 @@ fun HistoryApp(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onAuthSuccess = {}
+                onAuthSuccess = {
+
+                }
             )
 
             authScreen(
@@ -121,15 +124,19 @@ fun HistoryApp(
                 onNavigateToDuel = { room ->
                     navController.navigateToDuel(roomId = room.id)
                 },
-                onNavigateBack = {
-                    navController.popBackStack()
+                onNavigateBackToHome = {
+                    navController.navigateToHome {
+                        popUpTo<Home>()
+                    }
                 }
             )
 
             profileScreen()
 
             duelScreen(onNavigateToQuestion = {
-                navController.navigateToQuestion()
+                navController.navigateToQuestion {
+                    popUpTo<Duel> { inclusive = true }
+                }
             })
 
             learningScreen()
@@ -166,6 +173,7 @@ fun BottomNavigationBar(
                     changeRoute(Learning)
                     navController.navigateToLearning {
                         popUpTo(0)
+                        launchSingleTop = true
                     }
                 },
                 label = {
@@ -186,6 +194,8 @@ fun BottomNavigationBar(
                     changeRoute(Home)
                     navController.navigateToHome {
                         popUpTo(0)
+                        launchSingleTop = true
+
                     }
                 },
                 label = {
@@ -208,6 +218,7 @@ fun BottomNavigationBar(
                     changeRoute(Profile)
                     navController.navigateToProfile {
                         popUpTo(0)
+                        launchSingleTop = true
                     }
                 },
                 label = {

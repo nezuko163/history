@@ -10,5 +10,4 @@ fun UserAvatar(
     photoUrl: String
 ) {
     ImageFromInet(url = photoUrl, errorImageResource = R.drawable.profile)
-
 }

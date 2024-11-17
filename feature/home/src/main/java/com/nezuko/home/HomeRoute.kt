@@ -17,7 +17,7 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     vm: HomeViewModel = hiltViewModel(),
     onNavigateToDuel: (room: RoomModel) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBackToHome: () -> Unit
 ) {
     val me by vm.me.collectAsState()
     val isSearching by vm.isSearching.collectAsState()
@@ -35,7 +35,7 @@ fun HomeRoute(
             },
             onGameEnd = { room ->
                 Toast.makeText(context, "игра ${room.id} закончена", Toast.LENGTH_SHORT).show()
-                onNavigateBack()
+                onNavigateBackToHome()
             }
         )
     }

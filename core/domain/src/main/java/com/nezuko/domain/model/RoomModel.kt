@@ -14,4 +14,13 @@ data class RoomModel(
     enum class Status {
         NONE, WAITING, GAME, END
     }
+
+    fun toMap(): Map<String, Any> = mapOf(
+        "id" to id,
+        "player1" to player1,
+        "player2" to player2,
+        "status" to status,
+        "questionsList" to questionsList,
+        "usersAnswers" to usersAnswers
+    )
 }

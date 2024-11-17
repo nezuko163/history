@@ -17,10 +17,10 @@ fun NavController.navigateToHome(
 
 fun NavGraphBuilder.homeScreen(
     onNavigateToDuel: (room: RoomModel) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBackToHome: () -> Unit
 ) = composable<Home> {
     HomeRoute(
         onNavigateToDuel = onNavigateToDuel,
-        onNavigateBack = onNavigateBack
+        onNavigateBackToHome = onNavigateBackToHome
     )
 }

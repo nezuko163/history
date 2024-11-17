@@ -1,9 +1,12 @@
 package com.nezuko.question
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectableGroup
@@ -24,35 +27,60 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nezuko.domain.model.QuestionModel
 import com.nezuko.ui.theme.Spacing
+
+private const val TAG = "QuestionScreen"
 
 @Composable
 fun QuestionScreen(
     modifier: Modifier = Modifier,
     question: QuestionModel,
-    onAnswerButtonClick: (List<Int>) -> Unit = {}
+    onBackHandler: () -> Unit,
+    onAnswerButtonClick: (List<Int>) -> Unit
 ) {
+    BackHandler {
+        Log.i(TAG, "QuestionScreen: asd")
+        onBackHandler()
+    }
+
     val checkedStates = remember { mutableStateListOf<Int>() }
 
-    val onCheckedChange: (index: Int, isChecked: Boolean) -> Unit =
-        if (question.isOneRightAnswer) { index, isCheked ->
+    val onCheckedChange: (index: Int, isChecked: Boolean) -> Unit
+
+    if (question.isOneRightAnswer) {
+        onCheckedChange = { index, isChecked ->
+            Log.i(TAG, "QuestionScreen: one right: index - $index, isChecked - $isChecked")
             checkedStates.clear()
             checkedStates.add(index)
-        } else { index, isChecked ->
+        }
+    } else {
+        onCheckedChange = { index, isChecked ->
+            Log.i(TAG, "QuestionScreen: more right: index - $index, isChecked - $isChecked")
             if (isChecked) {
                 checkedStates.add(index)
             } else {
                 checkedStates.remove(index)
             }
+            Log.i(TAG, "QuestionScreen: list - $checkedStates")
         }
+    }
 
-    Box(modifier) {
+    Box(modifier.fillMaxSize()) {
+        Text(
+            text = question.description,
+            Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = Spacing.default.extraLarge * 3),
+            fontSize = 20.sp
+        )
+
         QuestionsBox(
             modifier = Modifier.align(Alignment.Center),
             question = question,
             checkedStates = checkedStates,
-            onCheckedChange = onCheckedChange
+            myOnCheckedChange = onCheckedChange
         )
 
         Button(
@@ -69,7 +97,7 @@ private fun QuestionsBox(
     modifier: Modifier = Modifier,
     question: QuestionModel,
     checkedStates: List<Int>,
-    onCheckedChange: (index: Int, isChecked: Boolean) -> Unit
+    myOnCheckedChange: (index: Int, isChecked: Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -81,30 +109,29 @@ private fun QuestionsBox(
                 question.variants.forEachIndexed { index: Int, variant: String ->
                     VariantCell(
                         isRight = question.answers.contains(index),
-                        description = variant,
+                        variant = variant,
                         icon = {
                             RadioButton(selected = checkedStates.contains(index), onClick = null)
                         },
                         onClick = {
-                            onCheckedChange(index, !checkedStates.contains(index))
+                            myOnCheckedChange(index, !checkedStates.contains(index))
                         })
                 }
             }
 
         } else {
-            val childCheckedStates = remember {
-                mutableStateListOf<Boolean>().apply { repeat(question.variants.size) { add(false) } }
-            }
-
             Column {
-                childCheckedStates.forEachIndexed { index: Int, isChecked: Boolean ->
+                question.variants.forEachIndexed { index: Int, variant: String ->
                     VariantCell(
                         isRight = question.answers.contains(index),
-                        description = question.variants[index],
+                        variant = variant,
                         icon = {
-                            Checkbox(checked = childCheckedStates[index], onCheckedChange = null)
+                            Checkbox(
+                                checked = checkedStates.contains(index),
+                                onCheckedChange = null
+                            )
                         },
-                        onClick = { childCheckedStates[index] = !childCheckedStates[index] })
+                        onClick = { myOnCheckedChange(index, !checkedStates.contains(index)) })
                 }
             }
         }
@@ -115,7 +142,7 @@ private fun QuestionsBox(
 private fun VariantCell(
     modifier: Modifier = Modifier,
     isRight: Boolean,
-    description: String,
+    variant: String,
     icon: @Composable () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -136,7 +163,7 @@ private fun VariantCell(
 
             Spacer(modifier = Modifier.padding(horizontal = Spacing.default.small))
 
-            Text(text = description)
+            Text(text = variant)
         }
     }
 }
@@ -147,7 +174,7 @@ private fun VariantCellPreview() {
     VariantCell(
         modifier = Modifier.fillMaxWidth(),
         isRight = true,
-        description = "Юля я люблю тебя",
+        variant = "домик",
         icon = {
             Icon(imageVector = Icons.Default.Home, contentDescription = null)
         }) {
@@ -160,10 +187,10 @@ private fun VariantCellPreview() {
 private fun QuestionBoxWithOneAnswerPreview() {
     val question = QuestionModel(
         description = "я не знаю",
-        variants = listOf("фвфвы", "мне больно", "я не хочу тебя терять"),
+        variants = listOf("фвфвы", "пися попа", "эщкере"),
         answers = listOf(2)
     )
-    QuestionScreen(question = question)
+    QuestionScreen(question = question , onBackHandler = {}) {}
 }
 
 @Preview
@@ -171,8 +198,8 @@ private fun QuestionBoxWithOneAnswerPreview() {
 private fun QuestionBoxWithTwoAnswerPreview() {
     val question = QuestionModel(
         description = "я не знаю",
-        variants = listOf("фвфвы", "мне больно", "я не хочу тебя терять"),
+        variants = listOf("фвфвы", "пися попа", "эщкере"),
         answers = listOf(1, 2)
     )
-    QuestionScreen(question = question)
+    QuestionScreen(question = question, onBackHandler = {}) {}
 }

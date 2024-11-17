@@ -56,7 +56,7 @@ fun DuelRoute(
             onButtonEndGameClick = {
                 vm.endGame()
             },
-            onQuestionButtonClick = onNavigateToQuestion
+            onGameStart = onNavigateToQuestion
         )
     }
 }
