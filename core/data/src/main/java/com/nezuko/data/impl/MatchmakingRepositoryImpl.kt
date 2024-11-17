@@ -48,17 +48,17 @@ class MatchmakingRepositoryImpl @Inject constructor(
     private val _questions = MutableStateFlow<List<QuestionModel>?>(null)
     override val questions = _questions.asStateFlow()
 
+    private lateinit var listener: ChildEventListener
 
     override suspend fun startSearch(
         user: UserProfile,
         onRoomCreated: (room: RoomModel) -> Unit,
         onGameEnd: (room: RoomModel) -> Unit,
-
-        ) {
+    ) {
         _isSearching.update { true }
         searchFreeRooms(user.id)
 
-        rooms.ref.addChildEventListener(object : ChildEventListener {
+        listener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 if (_currentRoom.value != null) return
                 Log.i(TAG, "onChildAdded: snapshot $snapshot")
@@ -89,6 +89,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 Log.i(TAG, "onChildChanged: snapshot - $snapshot")
+                Log.i(TAG, "onChildChanged: previous - $previousChildName")
 
                 val room = snapshot.getValue<RoomModel>()
                 if (room == null) {
@@ -106,15 +107,22 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
                 if (room.player1 == user.id || room.player2 == user.id) {
                     Log.i(TAG, "onChildChanged: asd")
-                    onGameEnd(room)
-                    _currentRoom.update { null }
+                    if (room.status == RoomModel.Status.END) {
+                        onGameEnd(room)
+                        _currentRoom.update { null }
+                    } else {
+                        _currentRoom.update { room }
+                    }
                 }
 
-                if (_questions.value != null) _questions.update { null }
-                if (_currentRoom.value != null) _currentRoom.update { null }
-                if (_isSearching.value) _isSearching.update { false }
+                if (_currentRoom.value == null) {
 
-                rooms.ref.removeEventListener(this)
+                    if (_questions.value != null) _questions.update { null }
+                    if (_currentRoom.value != null) _currentRoom.update { null }
+                    if (_isSearching.value) _isSearching.update { false }
+
+                    rooms.ref.removeEventListener(this)
+                }
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
@@ -128,7 +136,9 @@ class MatchmakingRepositoryImpl @Inject constructor(
             override fun onCancelled(error: DatabaseError) {
                 error.toException().printStackTrace()
             }
-        })
+        }
+
+        rooms.ref.addChildEventListener(listener)
     }
 
     private suspend fun searchFreeRooms(playerId: String) =
@@ -233,6 +243,11 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     }
             }
         }
+    }
+
+    override suspend fun onDestroy() {
+        if (_currentRoom.value != null) endGame()
+        if (::listener.isInitialized) rooms.ref.removeEventListener(listener)
     }
 
     override suspend fun stopSearch(

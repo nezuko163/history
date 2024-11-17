@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nezuko.domain.repository.AuthRepository
-import com.nezuko.domain.repository.RemoteStorageRepository
+import com.nezuko.domain.repository.MatchmakingRepository
 import com.nezuko.domain.repository.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,7 +14,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userProfileRepository: UserProfileRepository,
-    private val remoteStorageRepository: RemoteStorageRepository
+    private val matchmakingRepository: MatchmakingRepository
 ) : ViewModel() {
     val me = userProfileRepository.me
 
@@ -43,7 +43,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun onDestroy() {
-        authRepository.onDestroy()
+        viewModelScope.launch {
+            authRepository.onDestroy()
+            matchmakingRepository.onDestroy()
+        }
     }
 
     companion object {

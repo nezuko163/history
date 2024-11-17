@@ -22,4 +22,6 @@ interface MatchmakingRepository {
     )
 
     suspend fun endGame(): RoomModel?
+
+    suspend fun onDestroy()
 }

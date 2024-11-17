@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -25,9 +26,8 @@ fun QuestionRoute(
 ) {
     val context = LocalContext.current
     val questions by vm.questions.collectAsState()
-    var numberOfCurrentQuestion by remember {
-        mutableIntStateOf(0)
-    }
+    var numberOfCurrentQuestion by remember { mutableIntStateOf(0) }
+    val checkedStates = remember { mutableStateListOf<Int>() }
 
     if (questions == null) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -37,8 +37,16 @@ fun QuestionRoute(
         QuestionScreen(
             modifier = modifier.fillMaxSize(),
             question = questions!![numberOfCurrentQuestion],
+            checkedStates = checkedStates,
             onAnswerButtonClick = { answers ->
+                vm.answerOnQuestion(
+                    question = questions!![numberOfCurrentQuestion],
+                    answers = answers
+                )
                 Toast.makeText(context, answers.toString(), Toast.LENGTH_SHORT).show()
+            },
+            onTimeEnd = {
+                checkedStates.clear()
                 numberOfCurrentQuestion++
             },
             onBackHandler = {
