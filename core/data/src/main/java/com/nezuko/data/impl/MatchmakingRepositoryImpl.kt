@@ -13,6 +13,7 @@ import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.model.UserProfile
+import com.nezuko.domain.repository.GamesRepository
 import com.nezuko.domain.repository.MatchmakingRepository
 import com.nezuko.domain.repository.QuestionRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,6 +33,7 @@ import kotlin.coroutines.suspendCoroutine
 class MatchmakingRepositoryImpl @Inject constructor(
     private val db: FirebaseDatabase,
     private val questionRepository: QuestionRepository,
+    private val gamesRepository: GamesRepository,
     @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
     @Dispatcher(MyDispatchers.Main) private val MainDispatcher: CoroutineDispatcher
 ) : MatchmakingRepository {
@@ -48,7 +50,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
     private val _questions = MutableStateFlow<List<QuestionModel>?>(null)
     override val questions = _questions.asStateFlow()
 
-    private lateinit var listener: ChildEventListener
+    private lateinit var roomListener: ChildEventListener
 
     override suspend fun startSearch(
         user: UserProfile,
@@ -58,7 +60,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
         _isSearching.update { true }
         searchFreeRooms(user.id)
 
-        listener = object : ChildEventListener {
+        roomListener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 if (_currentRoom.value != null) return
                 Log.i(TAG, "onChildAdded: snapshot $snapshot")
@@ -97,6 +99,8 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     throw RuntimeException("onChildChanged: room = null")
                 }
 
+                gamesRepository.updateGame(room)
+
                 Log.i(TAG, "onChildChanged: cur room - ${_currentRoom.value}")
 
                 if (_currentRoom.value != null) {
@@ -116,7 +120,6 @@ class MatchmakingRepositoryImpl @Inject constructor(
                 }
 
                 if (_currentRoom.value == null) {
-
                     if (_questions.value != null) _questions.update { null }
                     if (_currentRoom.value != null) _currentRoom.update { null }
                     if (_isSearching.value) _isSearching.update { false }
@@ -138,7 +141,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
             }
         }
 
-        rooms.ref.addChildEventListener(listener)
+        rooms.ref.addChildEventListener(roomListener)
     }
 
     private suspend fun searchFreeRooms(playerId: String) =
@@ -157,7 +160,12 @@ class MatchmakingRepositoryImpl @Inject constructor(
                             currentData.value = players
 
                             CoroutineScope(coroutineContext).launch(IODispatcher) {
-                                key = createRoom(playerId, opponentId)
+                                key = gamesRepository.createGame(
+                                    playerId1 = playerId,
+                                    playerId2 = opponentId,
+                                    generateQuestions = { questionRepository.generateQuestions() }
+                                )
+                                    .id
                             }
                             Transaction.success(currentData)
                         }
@@ -184,49 +192,13 @@ class MatchmakingRepositoryImpl @Inject constructor(
             }
         }
 
-    // TODO: очень сильно надо выделить логику генериации вопросов отдельно
-    private suspend fun createRoom(
-        playerId1: String,
-        playerId2: String,
-        theme: String = "ALL"
-    ): String {
-        val newRoomRef = rooms.push()
-
-        if (newRoomRef.key == null || newRoomRef.key!!.isEmpty()) throw RuntimeException("newRoomRef.key - null")
-
-        Log.i(TAG, "createRoom: start")
-        val questions: List<QuestionModel> = questionRepository.generateQuestions()
-
-        Log.i(TAG, "createRoom: end")
-
-
-        val newRoom = RoomModel(
-            id = newRoomRef.key!!,
-            player1 = playerId1,
-            player2 = playerId2,
-            status = RoomModel.Status.GAME,
-            questionsList = questions.map { it.id }
-        )
-
-        newRoomRef.setValue(newRoom)
-            .addOnSuccessListener {
-                Log.i(TAG, "createRoom: ураааа создана")
-            }
-            .addOnFailureListener { e ->
-                e.printStackTrace()
-            }
-            .addOnCanceledListener {
-                Log.e(TAG, "createRoom: cancel")
-            }
-
-        return newRoomRef.key!!
-    }
-
 
     override suspend fun endGame() = withContext(IODispatcher) {
         suspendCancellableCoroutine { continuation ->
             if (_currentRoom.value == null) {
-                continuation.resumeWithException(RuntimeException("игра не началась"))
+                continuation.resume(null)
+                Log.e(TAG, "endGame: game is already ended or isnt started", )
+//                continuation.resumeWithException(RuntimeException("игра не началась"))
             } else {
                 rooms.child(_currentRoom.value!!.id).updateChildren(
                     _currentRoom.value!!.copy(status = RoomModel.Status.END).toMap()
@@ -247,7 +219,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
     override suspend fun onDestroy() {
         if (_currentRoom.value != null) endGame()
-        if (::listener.isInitialized) rooms.ref.removeEventListener(listener)
+        if (::roomListener.isInitialized) rooms.ref.removeEventListener(roomListener)
     }
 
     override suspend fun stopSearch(

@@ -17,7 +17,6 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     vm: HomeViewModel = hiltViewModel(),
     onNavigateToDuel: (room: RoomModel) -> Unit,
-    onNavigateBackToHome: () -> Unit
 ) {
     val me by vm.me.collectAsState()
     val isSearching by vm.isSearching.collectAsState()
@@ -28,20 +27,19 @@ fun HomeRoute(
 
     val startSearch = {
         vm.startSearch(
-            userProfile = me.data!!,
+            userProfile = me!!,
             onRoomCreated = { room ->
                 Toast.makeText(context, room.toString(), Toast.LENGTH_SHORT).show()
                 onNavigateToDuel(room)
             },
             onGameEnd = { room ->
                 Toast.makeText(context, "игра ${room.id} закончена", Toast.LENGTH_SHORT).show()
-                onNavigateBackToHome()
             }
         )
     }
     val stopSearch = {
         vm.stopSearch(
-            userProfile = me.data!!,
+            userProfile = me!!,
             onSearchStopped = {
                 Toast.makeText(context, "поиск закончен", Toast.LENGTH_SHORT).show()
             }

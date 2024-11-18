@@ -16,8 +16,8 @@ class QuestionViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val duelRepository: DuelRepository
 ) : ViewModel() {
-    private val me = userProfileRepository.me.value.data!!
-    private val room = matchmakingRepository.currentRoom.value!!
+    private val me = userProfileRepository.me.value!!
+    val room = matchmakingRepository.currentRoom
 
     val questions = matchmakingRepository.questions
 
@@ -33,7 +33,7 @@ class QuestionViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             duelRepository.answerOnQuestion(
-                room = room,
+                room = room.value!!,
                 question = question,
                 answers = answers,
                 user = me

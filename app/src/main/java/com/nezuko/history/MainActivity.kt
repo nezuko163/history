@@ -11,7 +11,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nezuko.auth.Start
-import com.nezuko.domain.model.ResultModel
 import com.nezuko.home.navigation.Home
 import com.nezuko.ui.theme.HistoryTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,10 +36,10 @@ class MainActivity : ComponentActivity() {
                 val splashScreen = installSplashScreen()
 
                 splashScreen.setKeepOnScreenCondition {
-                    me.status == ResultModel.Status.LOADING
+                    me == null
                 }
 
-                val startDestination = if (me.data == null) {
+                val startDestination = if (me == null) {
                     Start
                 } else {
                     Home

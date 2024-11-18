@@ -63,6 +63,7 @@ dependencies {
     implementation(project(":feature:learning"))
     implementation(project(":feature:duel"))
     implementation(project(":feature:question"))
+    implementation(project(":feature:gameStat"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

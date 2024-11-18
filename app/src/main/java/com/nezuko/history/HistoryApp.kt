@@ -38,6 +38,8 @@ import com.nezuko.auth.registerScreen
 import com.nezuko.duel.navigation.Duel
 import com.nezuko.duel.navigation.duelScreen
 import com.nezuko.duel.navigation.navigateToDuel
+import com.nezuko.gamestat.navigation.gameStatScreen
+import com.nezuko.gamestat.navigation.navigateToGameStat
 import com.nezuko.home.navigation.Home
 import com.nezuko.home.navigation.homeScreen
 import com.nezuko.home.navigation.navigateToHome
@@ -124,11 +126,6 @@ fun HistoryApp(
                 onNavigateToDuel = { room ->
                     navController.navigateToDuel(roomId = room.id)
                 },
-                onNavigateBackToHome = {
-                    navController.navigateToHome {
-                        popUpTo<Home>()
-                    }
-                }
             )
 
             profileScreen()
@@ -141,9 +138,28 @@ fun HistoryApp(
 
             learningScreen()
 
-            questionScreen(onNavigateBack = {
+            questionScreen(
+                onNavigateToGameStat = { roomId ->
+                    Log.i(TAG, "HistoryApp: onNavigateToGameStat: room - $roomId ")
+                    navController.navigateToGameStat(roomId)
+                }
+            )
 
-            })
+            gameStatScreen(
+                onNavigateBack = {
+                    val curRoute = navController.currentDestination?.route
+                    Log.i(TAG, "HistoryApp: cur route - $curRoute")
+                    Log.i(TAG, "HistoryApp: route - $route")
+
+                    if (curRoute == "com.nezuko.profile.navigation.Profile") {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigateToHome {
+                            popUpTo<Home>()
+                        }
+                    }
+                }
+            )
         }
     }
 }

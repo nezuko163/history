@@ -15,7 +15,7 @@ fun NavController.navigateToQuestion(
 ) = navigate(Question, navOptions)
 
 fun NavGraphBuilder.questionScreen(
-    onNavigateBack: () -> Unit
+    onNavigateToGameStat: (roomId: String) -> Unit
 ) = composable<Question> {
-    QuestionRoute()
+    QuestionRoute(onNavigateToGameStat = onNavigateToGameStat)
 }

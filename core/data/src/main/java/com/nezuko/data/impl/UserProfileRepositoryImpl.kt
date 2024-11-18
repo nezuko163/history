@@ -5,7 +5,6 @@ import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
-import com.nezuko.domain.model.ResultModel
 import com.nezuko.domain.model.UserProfile
 import com.nezuko.domain.repository.UserProfileRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,12 +26,14 @@ class UserProfileRepositoryImpl @Inject constructor(
 ) : UserProfileRepository {
     private val users = db.getReference("users2")
 
-    private val _me = MutableStateFlow<ResultModel<UserProfile>>(ResultModel.loading())
+    private val _me = MutableStateFlow<UserProfile?>(null)
     override val me = _me.asStateFlow()
 
     @Volatile
     private var _uid = ""
     override val uid = _uid
+
+    private val cachedUsers = HashMap<String, UserProfile>()
 
     override fun setUid(uid: String) {
         Log.i(TAG, "setUid: $uid")
@@ -40,24 +41,25 @@ class UserProfileRepositoryImpl @Inject constructor(
     }
 
     override fun setAvatarUrl(url: String) {
-        if (_me.value.data == null) {
+        if (_me.value == null) {
             Log.e(TAG, "setAvatarUrl: _me = null")
             return
         }
-        _me.update { ResultModel.success(it.data!!.copy(photoUrl = url)) }
+        _me.update { it!!.copy(photoUrl = url) }
     }
 
     override suspend fun findMe() {
         if (_uid.isEmpty()) {
-            _me.update { ResultModel.none() }
+            _me.update { null }
         } else {
             val user = getUserProfileById(_uid)
             Log.i(TAG, "findMe: $user")
-            _me.update { ResultModel.success(user) }
+            _me.update { user }
         }
     }
 
     override suspend fun getUserProfileById(id: String): UserProfile {
+        if (cachedUsers.containsKey(id)) return cachedUsers[id]!!
         return withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
                 Log.i(TAG, "getUserProfileById: $id")
@@ -73,6 +75,7 @@ class UserProfileRepositoryImpl @Inject constructor(
                         val user = snapshot.getValue(UserProfile::class.java)
                         Log.i(TAG, "getUserProfileById: $user")
                         if (user != null) {
+                            cachedUsers.put(user.id, user)
                             continuation.resume(user)
                         } else {
                             continuation.resumeWithException(RuntimeException("user not found"))
@@ -119,7 +122,7 @@ class UserProfileRepositoryImpl @Inject constructor(
                     .setValue(userProfile)
                     .addOnSuccessListener {
                         continuation.resume(Unit)
-                        _me.update { ResultModel.success(userProfile) }
+                        _me.update { userProfile }
                     }
                     .addOnFailureListener { e ->
                         continuation.resumeWithException(e)

@@ -18,7 +18,7 @@ class ProfileViewModel @Inject constructor(
     val me = userProfileRepository.me
 
     fun setUserAvatar(uri: Uri) {
-        if (me.value.data == null) {
+        if (me.value == null) {
             Log.e(TAG, "setUserAvatar: me = null")
             return
         }
@@ -27,7 +27,7 @@ class ProfileViewModel @Inject constructor(
             Log.i(TAG, "setUserAvatar: remoteUri - $remoteUri")
             if (remoteUri.isNotEmpty()) {
                 userProfileRepository.setAvatarUrl(remoteUri)
-                userProfileRepository.updateUserProfileById(me.value.data!!)
+                userProfileRepository.updateUserProfileById(me.value!!)
             }
         }
     }

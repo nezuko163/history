@@ -33,7 +33,7 @@ fun DuelRoute(
     }
 
     LaunchedEffect(Unit) {
-        if (currentRoom!!.player1 == me.data!!.id) {
+        if (currentRoom!!.player1 == me!!.id) {
             vm.findOpponent(currentRoom!!.player2)
         } else {
             vm.findOpponent(currentRoom!!.player1)
@@ -51,7 +51,7 @@ fun DuelRoute(
         Log.i(TAG, "DuelRoute: $questions")
         DuelScreen(
             modifier = modifier,
-            me = me.data!!,
+            me = me!!,
             opponent = opponent!!,
             onButtonEndGameClick = {
                 vm.endGame()

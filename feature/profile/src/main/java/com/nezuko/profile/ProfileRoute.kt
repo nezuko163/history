@@ -49,7 +49,7 @@ fun ProfileRoute(
 
 
     ProfileScreen(modifier,
-        userProfile = user.data!!,
+        userProfile = user!!,
         onArrowBackClick = {},
         onProfileIconClick = {
             pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

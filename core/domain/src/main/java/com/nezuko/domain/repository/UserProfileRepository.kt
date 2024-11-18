@@ -1,11 +1,10 @@
 package com.nezuko.domain.repository
 
-import com.nezuko.domain.model.ResultModel
 import com.nezuko.domain.model.UserProfile
 import kotlinx.coroutines.flow.StateFlow
 
 interface UserProfileRepository {
-    val me: StateFlow<ResultModel<UserProfile>>
+    val me: StateFlow<UserProfile?>
     val uid: String
 
     fun setUid(uid: String)
