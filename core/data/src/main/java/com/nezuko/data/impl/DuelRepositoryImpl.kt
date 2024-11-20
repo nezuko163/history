@@ -6,6 +6,7 @@ import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
+import com.nezuko.domain.model.UserAnswer
 import com.nezuko.domain.model.UserProfile
 import com.nezuko.domain.repository.DuelRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,13 +28,25 @@ class DuelRepositoryImpl @Inject constructor(
         answers: List<Int>,
         user: UserProfile
     ) {
+        val isRightAnswer = ArrayList(answers).sorted() == ArrayList(question.answers.sorted())
+
+        Log.i(TAG, "answerOnQuestion: answers - $answers")
+        Log.i(TAG, "answerOnQuestion: question - $question")
+
         withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
                 rooms
                     .child(room.id)
                     .child("usersAnswers")
                     .child(user.id)
-                    .updateChildren(mapOf(question.id to answers))
+                    .child(question.id)
+                    .updateChildren(
+                        UserAnswer(
+                            rightAnswers = question.answers,
+                            userAnswers = answers,
+                            correct = isRightAnswer
+                        ).toMap()
+                    )
                     .addOnSuccessListener {
                         Log.i(TAG, "answerOnQuestion: success")
                         continuation.resume(Unit)
@@ -48,6 +61,5 @@ class DuelRepositoryImpl @Inject constructor(
                     }
             }
         }
-
     }
 }

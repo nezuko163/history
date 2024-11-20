@@ -7,6 +7,7 @@ import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.repository.GamesRepository
+import com.nezuko.domain.repository.QuestionRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -17,6 +18,7 @@ import kotlin.coroutines.resumeWithException
 class GamesRepositoryImpl @Inject constructor(
     @Dispatcher(MyDispatchers.IO) private val IODispatcher: CoroutineDispatcher,
     private val db: FirebaseDatabase,
+    private val questionRepository: QuestionRepository
 ) : GamesRepository {
     private val rooms = db.getReference("rooms")
 
@@ -102,5 +104,14 @@ class GamesRepositoryImpl @Inject constructor(
 
     override fun updateGame(room: RoomModel) {
         cachedGames[room.id] = room
+    }
+
+    override suspend fun analyzeAnswers(room: RoomModel) {
+        val questions = questionRepository.findQuestionsById(room.questionsList)
+
+        var player1Score = 0
+        var player2Score = 0
+
+        
     }
 }

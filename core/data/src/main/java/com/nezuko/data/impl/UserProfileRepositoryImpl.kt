@@ -50,7 +50,7 @@ class UserProfileRepositoryImpl @Inject constructor(
 
     override suspend fun findMe() {
         if (_uid.isEmpty()) {
-            _me.update { null }
+            _me.update { UserProfile() }
         } else {
             val user = getUserProfileById(_uid)
             Log.i(TAG, "findMe: $user")

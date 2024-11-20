@@ -9,7 +9,7 @@ data class RoomModel(
     val player2: String = "",
     val status: Status = Status.NONE,
     val questionsList: List<String> = emptyList(),
-    val usersAnswers: HashMap<String, HashMap<String, List<Int>>> = hashMapOf(),
+    val usersAnswers: HashMap<String, HashMap<String, UserAnswer>> = hashMapOf(),
     val winner: String = ""
 ) {
     enum class Status {
@@ -23,5 +23,17 @@ data class RoomModel(
         "status" to status,
         "questionsList" to questionsList,
         "usersAnswers" to usersAnswers
+    )
+}
+
+data class UserAnswer(
+    val rightAnswers: List<Int> = emptyList(),
+    val userAnswers: List<Int> = emptyList(),
+    val correct: Boolean = false
+) {
+    fun toMap() = mapOf(
+        "rightAnswers" to rightAnswers,
+        "userAnswers" to userAnswers,
+        "correct" to correct
     )
 }

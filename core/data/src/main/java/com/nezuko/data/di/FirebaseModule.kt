@@ -2,6 +2,7 @@ package com.nezuko.data.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.Logger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +20,6 @@ abstract class FirebaseModule {
 
         @Provides
         @Singleton
-        fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
+        fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance().apply { this.setLogLevel(Logger.Level.DEBUG) }
     }
 }

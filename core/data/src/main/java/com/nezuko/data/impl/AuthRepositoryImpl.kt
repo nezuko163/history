@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
-import com.nezuko.domain.model.ResultModel
 import com.nezuko.domain.repository.AuthRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,7 +30,7 @@ class AuthRepositoryImpl @Inject constructor(
     private lateinit var authStateListener: AuthStateListener
     private lateinit var tokenIdListener: FirebaseAuth.IdTokenListener
 
-    private val _currentUserId = MutableStateFlow<ResultModel<String>>(ResultModel.loading())
+    private val _currentUserId = MutableStateFlow<String?>(null)
     override val currentUserId = _currentUserId.asStateFlow()
 
     private var isLoaded = false
@@ -43,11 +42,11 @@ class AuthRepositoryImpl @Inject constructor(
             Log.i(TAG, "onCreate: _currentUserId - ${_currentUserId.value}")
             if (user == null) {
                 Log.i(TAG, "onCreate: user = null")
-                _currentUserId.update { ResultModel.none() }
+                _currentUserId.update { "" }
             } else {
                 Log.i(TAG, "onCreate: user != null")
-                if (_currentUserId.value.data != user.uid) {
-                    _currentUserId.update { ResultModel.success(user.uid) }
+                if (_currentUserId.value != user.uid) {
+                    _currentUserId.update { user.uid }
                 }
             }
         }
@@ -60,7 +59,7 @@ class AuthRepositoryImpl @Inject constructor(
 //            }
 //        }
 //        auth.addIdTokenListener(tokenIdListener)
-        auth.addAuthStateListener(authStateListener)
+//        auth.addAuthStateListener(authStateListener)
     }
 
     override fun onDestroy() {
@@ -79,7 +78,7 @@ class AuthRepositoryImpl @Inject constructor(
             val currentUser = auth.currentUser
             Log.i(TAG, "getCurrentUser: 1")
             if (currentUser == null) {
-                _currentUserId.update { ResultModel.none() }
+                _currentUserId.update { "" }
                 Log.i(TAG, "getCurrentUser: 2")
                 return null
             }
@@ -106,7 +105,7 @@ class AuthRepositoryImpl @Inject constructor(
             }
         } catch (e: FirebaseAuthInvalidUserException) {
             Log.e(TAG, "getCurrentUser: $e", e)
-            _currentUserId.update { ResultModel.none() }
+            _currentUserId.update { "" }
             return null
         }
     }

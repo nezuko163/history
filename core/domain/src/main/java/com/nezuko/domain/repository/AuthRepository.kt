@@ -1,10 +1,9 @@
 package com.nezuko.domain.repository
 
-import com.nezuko.domain.model.ResultModel
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
-    val currentUserId: StateFlow<ResultModel<String>>
+    val currentUserId: StateFlow<String?>
 
     fun onCreate()
     fun onDestroy()

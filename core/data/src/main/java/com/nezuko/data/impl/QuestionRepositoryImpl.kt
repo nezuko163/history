@@ -27,6 +27,8 @@ class QuestionRepositoryImpl @Inject constructor(
     private val TAG = "QuestionRepositoryImpl"
     private val questionsRef = db.getReference("questions")
 
+    private val cachedQuestions = HashMap<String, QuestionModel>()
+
     override suspend fun getAllQuestions() = withContext(IODispatcher) {
         suspendCancellableCoroutine { continuation ->
             questionsRef.get()
@@ -35,6 +37,7 @@ class QuestionRepositoryImpl @Inject constructor(
                         val a = snapshot.children.mapNotNull { dataSnapshot ->
                             dataSnapshot.getValue(QuestionModel::class.java)
                         }
+                        a.map { cachedQuestions[it.id] = it }
                         Log.i(TAG, "getAllQuestions: $a")
                         continuation.resume(ArrayList(a))
                     } else {
@@ -56,6 +59,7 @@ class QuestionRepositoryImpl @Inject constructor(
             val questionRef = db.getReference("questions").push()
             questionRef.setValue(questionModel.setId(questionRef.key!!))
                 .addOnSuccessListener {
+                    cachedQuestions[questionModel.id] = questionModel
                     continuation.resume(questionModel)
                 }
                 .addOnFailureListener { e ->
@@ -90,6 +94,7 @@ class QuestionRepositoryImpl @Inject constructor(
                         val allQuestions = task.children.mapNotNull { dataSnapshot ->
                             dataSnapshot.getValue(QuestionModel::class.java)
                         }
+                        allQuestions.map { cachedQuestions[it.id] = it }
                         continuation.resume(allQuestions.shuffled().take(count))
                     }
                     .addOnFailureListener { e ->
@@ -102,30 +107,34 @@ class QuestionRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun findQuestionById(id: String) = withContext(IODispatcher) {
-        suspendCancellableCoroutine { continuation ->
-            Log.i(TAG, "findQuestionById: id - $id")
-            questionsRef.ref.orderByPriority().get()
-                .addOnSuccessListener { snapshot ->
-                    if (!snapshot.exists()) {
-                        throw RuntimeException("find question by id: snapshot empty")
-                    }
+    override suspend fun findQuestionById(id: String): QuestionModel {
+        if (cachedQuestions.containsKey(id)) return cachedQuestions[id]!!
 
-                    Log.i(TAG, "findQuestionById: snapshot - $snapshot")
-                    val a = snapshot.children.mapNotNull {
-                        it.getValue(QuestionModel::class.java)
-                    }.find { it.id == id }
-                    Log.i(TAG, "findQuestionById: questions - $a")
-                    if (a == null) throw RuntimeException("вопрос не найден")
-                    continuation.resume(a)
-                }
-                .addOnFailureListener { e ->
-                    e.printStackTrace()
-                    continuation.resumeWithException(e)
-                }
-                .addOnCanceledListener {
-                    continuation.cancel()
-                }
+        return withContext(IODispatcher) {
+            suspendCancellableCoroutine { continuation ->
+                Log.i(TAG, "findQuestionById: id - $id")
+                questionsRef.ref.orderByPriority().get()
+                    .addOnSuccessListener { snapshot ->
+                        if (!snapshot.exists()) {
+                            throw RuntimeException("find question by id: snapshot empty")
+                        }
+
+                        Log.i(TAG, "findQuestionById: snapshot - $snapshot")
+                        val a = snapshot.children.mapNotNull {
+                            it.getValue(QuestionModel::class.java)
+                        }.find { it.id == id }
+                        Log.i(TAG, "findQuestionById: questions - $a")
+                        if (a == null) throw RuntimeException("вопрос не найден")
+                        continuation.resume(a)
+                    }
+                    .addOnFailureListener { e ->
+                        e.printStackTrace()
+                        continuation.resumeWithException(e)
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel()
+                    }
+            }
         }
     }
 

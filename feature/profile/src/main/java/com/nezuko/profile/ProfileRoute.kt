@@ -19,6 +19,7 @@ private const val TAG = "ProfileRoute"
 
 @Composable
 fun ProfileRoute(
+    onGameHistoryNavigate: () -> Unit,
     modifier: Modifier = Modifier,
     vm: ProfileViewModel = hiltViewModel()
 ) {

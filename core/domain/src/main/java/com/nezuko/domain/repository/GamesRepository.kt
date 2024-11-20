@@ -13,4 +13,8 @@ interface GamesRepository {
     ): RoomModel
 
     fun updateGame(room: RoomModel)
+
+    suspend fun analyzeAnswers(
+        room: RoomModel
+    )
 }

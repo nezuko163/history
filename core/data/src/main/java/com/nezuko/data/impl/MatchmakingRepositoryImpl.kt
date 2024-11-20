@@ -59,14 +59,12 @@ class MatchmakingRepositoryImpl @Inject constructor(
     ) {
         _isSearching.update { true }
         searchFreeRooms(user.id)
-
+        Log.i(TAG, "startSearch: start")
         roomListener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 if (_currentRoom.value != null) return
-                Log.i(TAG, "onChildAdded: snapshot $snapshot")
                 val room = snapshot.getValue<RoomModel>()
                 if (room == null) {
-                    Log.e(TAG, "onChildAdded: room = null")
                     throw RuntimeException("onChildAdded: room = null")
                 }
 
@@ -90,27 +88,17 @@ class MatchmakingRepositoryImpl @Inject constructor(
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                Log.i(TAG, "onChildChanged: snapshot - $snapshot")
-                Log.i(TAG, "onChildChanged: previous - $previousChildName")
-
                 val room = snapshot.getValue<RoomModel>()
-                if (room == null) {
-                    Log.e(TAG, "onChildChanged: room = null")
-                    throw RuntimeException("onChildChanged: room = null")
-                }
+                    ?: throw RuntimeException("onChildChanged: room = null")
 
+                Log.i(TAG, "onChildChanged: room - $room")
+                
                 gamesRepository.updateGame(room)
-
-                Log.i(TAG, "onChildChanged: cur room - ${_currentRoom.value}")
 
                 if (_currentRoom.value != null) {
                     if (_currentRoom.value!!.id != room.id) return
                 }
-
-                Log.i(TAG, "onChildChanged: room - $room")
-
                 if (room.player1 == user.id || room.player2 == user.id) {
-                    Log.i(TAG, "onChildChanged: asd")
                     if (room.status == RoomModel.Status.END) {
                         onGameEnd(room)
                         _currentRoom.update { null }
@@ -146,6 +134,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
 
     private suspend fun searchFreeRooms(playerId: String) =
         withContext(IODispatcher) {
+            Log.i(TAG, "searchFreeRooms: start")
             suspendCoroutine { continuation ->
                 var key: String? = null
                 searchingPlayers.runTransaction(object : Transaction.Handler {
@@ -176,13 +165,10 @@ class MatchmakingRepositoryImpl @Inject constructor(
                         committed: Boolean,
                         currentData: DataSnapshot?
                     ) {
-                        Log.i(TAG, "onComplete: currentData - $currentData")
                         if (error != null) {
-                            Log.e(TAG, "onComplete: $error")
                             continuation.resumeWithException(Exception("Ошибка при поиске игры: ${error.message}"))
                         } else {
                             if (key == null) {
-                                Log.i(TAG, "onComplete: asd")
 //                                continuation.resumeWithException(RuntimeException("key = null, data - $currentData"))
                             }
                             continuation.resume(key)
@@ -190,29 +176,91 @@ class MatchmakingRepositoryImpl @Inject constructor(
                     }
                 })
             }
+            Log.i(TAG, "searchFreeRooms: end")
         }
 
 
     override suspend fun endGame() = withContext(IODispatcher) {
+        Log.i(TAG, "endGame: start")
         suspendCancellableCoroutine { continuation ->
             if (_currentRoom.value == null) {
                 continuation.resume(null)
-                Log.e(TAG, "endGame: game is already ended or isnt started", )
-//                continuation.resumeWithException(RuntimeException("игра не началась"))
             } else {
-                rooms.child(_currentRoom.value!!.id).updateChildren(
-                    _currentRoom.value!!.copy(status = RoomModel.Status.END).toMap()
-                )
-                    .addOnSuccessListener {
+                rooms.child(_currentRoom.value!!.id).runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val room = currentData.getValue<RoomModel>() ?: return Transaction.success(
+                            currentData
+                        )
+                        Log.i(TAG, "endGame: doTransaction: 1 room - $room")
+                        if (room.status == RoomModel.Status.END) {
+                            return Transaction.success(currentData)
+                        }
+                        var player1Score = 0
+                        var player2Score = 0
+
+                        room.usersAnswers.forEach { (userId, answers) ->
+                            if (userId == room.player1) {
+                                answers.forEach { (questionId, userAnswer) ->
+                                    if (userAnswer.correct) {
+                                        player1Score += 1
+                                    }
+                                }
+                            } else {
+                                answers.forEach { (questionId, userAnswer) ->
+                                    if (userAnswer.correct) {
+                                        player2Score += 1
+                                    }
+                                }
+                            }
+                        }
+                        var winner = ""
+
+                        if (player2Score > player1Score) {
+                            winner = room.player2
+                        } else if (player2Score < player1Score) {
+                            winner = room.player1
+                        }
+
+                        Log.i(
+                            TAG,
+                            "endGame: doTransaction: 2 room - ${
+                                room.copy(
+                                    status = RoomModel.Status.END,
+                                    winner = winner
+                                )
+                            }"
+                        )
+                        currentData.value =
+                            room.copy(status = RoomModel.Status.END, winner = winner)
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(
+                        error: DatabaseError?,
+                        committed: Boolean,
+                        currentData: DataSnapshot?
+                    ) {
+                        if (error != null) {
+                            continuation.resumeWithException(error.toException())
+                        }
                         continuation.resume(null)
                     }
-                    .addOnFailureListener { e ->
-                        e.printStackTrace()
-                        continuation.resumeWithException(e)
-                    }
-                    .addOnCanceledListener {
-                        continuation.cancel()
-                    }
+
+                })
+//                rooms.child(_currentRoom.value!!.id).updateChildren(
+//                    mapOf("status" to RoomModel.Status.END)
+//                )
+//                    .addOnSuccessListener {
+//                        continuation.resume(null)
+//                    }
+//                    .addOnFailureListener { e ->
+//                        e.printStackTrace()
+//                        continuation.resumeWithException(e)
+//                    }
+//                    .addOnCanceledListener {
+//                        continuation.cancel()
+//                    }
+                Log.i(TAG, "endGame: end")
             }
         }
     }
@@ -226,6 +274,7 @@ class MatchmakingRepositoryImpl @Inject constructor(
         user: UserProfile,
         onStopSearch: () -> Unit,
     ) {
+        Log.i(TAG, "stopSearch: start")
         val coroutineContext = coroutineContext
         withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
@@ -234,7 +283,6 @@ class MatchmakingRepositoryImpl @Inject constructor(
 //                        val players = currentData.value as? HashSet<String> ?: hashSetOf()
                         val players = currentData.value as? ArrayList<String> ?: arrayListOf()
 
-                        Log.i(TAG, "doTransaction: $players")
 
                         if (players.contains(user.id)) {
                             players.remove(user.id)
@@ -260,12 +308,12 @@ class MatchmakingRepositoryImpl @Inject constructor(
                             continuation.resumeWithException(error.toException())
                             return
                         }
-                        Log.i(TAG, "stopSearch - onComplete: data - $currentData")
                         continuation.resume(committed)
                     }
                 })
             }
         }
+        Log.i(TAG, "stopSearch: end")
     }
 
 }

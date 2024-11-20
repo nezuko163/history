@@ -29,6 +29,8 @@ class MainViewModel @Inject constructor(
             if (uid != null) {
                 userProfileRepository.setUid(uid)
                 Log.i(TAG, "getCurrentUser: ${userProfileRepository.uid}")
+            } else {
+                userProfileRepository.setUid("")
             }
             userProfileRepository.findMe()
         }

@@ -38,23 +38,21 @@ class MainActivity : ComponentActivity() {
                 splashScreen.setKeepOnScreenCondition {
                     me == null
                 }
-
-                val startDestination = if (me == null) {
-                    Start
-                } else {
-                    Home
+                if (me != null) {
+                    val startDestination = if (me!!.id.isEmpty()) {
+                        Start
+                    } else {
+                        Home
+                    }
+                    HistoryApp(
+                        startDestination = startDestination
+                    )
                 }
-                HistoryApp(
-                    startDestination = startDestination
-                )
             }
         }
     }
-
-
     override fun onDestroy() {
         vm.onDestroy()
         super.onDestroy()
-
     }
 }
