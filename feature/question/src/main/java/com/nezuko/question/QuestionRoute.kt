@@ -1,7 +1,6 @@
 package com.nezuko.question
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -54,12 +53,13 @@ fun QuestionRoute(
             modifier = modifier.fillMaxSize(),
             question = questions!![numberOfCurrentQuestion],
             checkedStates = checkedStates,
+            numberOfQuestion = numberOfCurrentQuestion + 1,
+            countOfQuestions = questions!!.size,
             onAnswerButtonClick = { answers ->
                 vm.answerOnQuestion(
                     question = questions!![numberOfCurrentQuestion],
                     answers = answers
                 )
-                Toast.makeText(context, answers.toString(), Toast.LENGTH_SHORT).show()
             },
             onTimeEnd = {
                 checkedStates.clear()

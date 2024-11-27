@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,17 +15,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Green
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,18 +60,19 @@ private const val TAG = "QuestionScreen"
 fun QuestionScreen(
     modifier: Modifier = Modifier,
     question: QuestionModel,
+    countOfQuestions: Int,
+    numberOfQuestion: Int,
     checkedStates: MutableList<Int>,
     onBackHandler: () -> Unit,
     onAnswerButtonClick: (List<Int>) -> Unit,
-    onTimeEnd: () -> Unit,
+    onTimeEnd: suspend () -> Unit,
 ) {
     Log.i(TAG, "QuestionScreen: recomp")
     BackHandler {
         Log.i(TAG, "QuestionScreen: asd")
         onBackHandler()
     }
-
-
+    var showRightAnswer by remember { mutableStateOf(false) }
     val onCheckedChange: (index: Int, isChecked: Boolean) -> Unit
 
     if (question.isOneRightAnswer) {
@@ -81,38 +90,60 @@ fun QuestionScreen(
         }
     }
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        containerColor = White
+    ) { paddingValues ->
         Box(
             modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            Text(
+                text = "Вопрос $numberOfQuestion/$countOfQuestions",
+                fontSize = 20.sp,
+                modifier = Modifier.padding(Spacing.default.extraLarge)
+            )
+
             TimerWithCircularIndicator(
-                totalTime = 10,
+                totalTime = if (!showRightAnswer) 10 else 3,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(Spacing.default.small),
-                onFinish = onTimeEnd
+                onFinish = {
+                    if (!showRightAnswer) {
+                        showRightAnswer = true
+                    } else {
+                        showRightAnswer = false
+                        onTimeEnd()
+                    }
+                }
             )
+
 
             Text(
                 text = question.description,
                 Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = Spacing.default.extraLarge * 3),
+                    .padding(top = 110.dp)
+                    .padding(horizontal = Spacing.default.large),
                 fontSize = 20.sp
             )
 
             QuestionsBox(
                 modifier = Modifier.align(Alignment.Center),
                 question = question,
+                showRightAnswer = showRightAnswer,
                 checkedStates = checkedStates,
                 myOnCheckedChange = onCheckedChange
             )
 
             Button(
+                colors = ButtonDefaults.buttonColors(containerColor = LightBlue),
                 onClick = { onAnswerButtonClick(checkedStates) },
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = Spacing.default.extraLarge),
+                enabled = !showRightAnswer
             ) {
                 Text(text = "Ответить")
             }
@@ -125,22 +156,38 @@ private fun QuestionsBox(
     modifier: Modifier = Modifier,
     question: QuestionModel,
     checkedStates: List<Int>,
+    showRightAnswer: Boolean,
     myOnCheckedChange: (index: Int, isChecked: Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(Spacing.default.medium),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (question.isOneRightAnswer) {
             Column(Modifier.selectableGroup()) {
                 question.variants.forEachIndexed { index: Int, variant: String ->
+                    val checkedStatesContains = checkedStates.contains(index)
+                    val answersContains = question.answers.contains(index)
+
                     VariantCell(
-                        isRight = question.answers.contains(index),
+                        isRight = if (answersContains) checkedStatesContains else {
+                            if (checkedStatesContains) false else null
+                        },
                         variant = variant,
                         icon = {
-                            RadioButton(selected = checkedStates.contains(index), onClick = null)
+                            RadioButton(
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = LightBlue,
+                                    disabledSelectedColor = if (answersContains && checkedStatesContains) Green else Red
+                                ),
+                                enabled = !showRightAnswer,
+                                selected = checkedStates.contains(index),
+                                onClick = null
+                            )
                         },
+                        showRightAnswer = showRightAnswer,
                         onClick = {
                             myOnCheckedChange(index, !checkedStates.contains(index))
                         })
@@ -149,15 +196,25 @@ private fun QuestionsBox(
         } else {
             Column {
                 question.variants.forEachIndexed { index: Int, variant: String ->
+                    val checkedStatesContains = checkedStates.contains(index)
+                    val answersContains = question.answers.contains(index)
                     VariantCell(
-                        isRight = question.answers.contains(index),
+                        isRight = if (answersContains) checkedStatesContains else {
+                            if (checkedStatesContains) false else null
+                        },
                         variant = variant,
                         icon = {
                             Checkbox(
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = LightBlue,
+                                    disabledCheckedColor = if (answersContains && checkedStatesContains) Green else Red
+                                ),
+                                enabled = !showRightAnswer,
                                 checked = checkedStates.contains(index),
                                 onCheckedChange = null
                             )
                         },
+                        showRightAnswer = showRightAnswer,
                         onClick = { myOnCheckedChange(index, !checkedStates.contains(index)) })
                 }
             }
@@ -168,7 +225,8 @@ private fun QuestionsBox(
 @Composable
 private fun VariantCell(
     modifier: Modifier = Modifier,
-    isRight: Boolean,
+    isRight: Boolean? = null,
+    showRightAnswer: Boolean,
     variant: String,
     icon: @Composable () -> Unit,
     onClick: () -> Unit,
@@ -176,8 +234,18 @@ private fun VariantCell(
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(Spacing.default.small),
-        onClick = onClick,
+            .padding(Spacing.default.small)
+            .then(
+                if (isRight != null && showRightAnswer) Modifier.border(
+                    width = 1.dp,
+                    color = if (isRight) Color.Green else Color.Red,
+                    shape = RoundedCornerShape(8.dp)
+                ) else Modifier
+            ),
+        onClick = {
+            if (!showRightAnswer) onClick() else {
+            }
+        },
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
     ) {
@@ -190,7 +258,11 @@ private fun VariantCell(
 
             Spacer(modifier = Modifier.padding(horizontal = Spacing.default.small))
 
-            Text(text = variant)
+            Text(
+                text = variant, color = if (showRightAnswer && isRight != null) {
+                    if (isRight) Color.Green else Red
+                } else Color.Black
+            )
         }
     }
 }
@@ -199,7 +271,7 @@ private fun VariantCell(
 fun TimerWithCircularIndicator(
     totalTime: Int, // Общее время в секундах
     modifier: Modifier = Modifier,
-    onFinish: () -> Unit = {}
+    onFinish: suspend () -> Unit = {}
 ) {
     var currentTime by remember { mutableIntStateOf(totalTime) }
     var restartFlag by remember { mutableStateOf(true) }
@@ -214,7 +286,6 @@ fun TimerWithCircularIndicator(
         currentTime = totalTime
     }
 
-    // Таймер обратного отсчёта
     LaunchedEffect(key1 = currentTime) {
         if (currentTime > 0) {
             delay(1000L)
@@ -257,17 +328,17 @@ private fun VariantCellPreview() {
     VariantCell(
         modifier = Modifier.fillMaxWidth(),
         isRight = true,
+        showRightAnswer = true,
         variant = "домик",
         icon = {
             Icon(imageVector = Icons.Default.Home, contentDescription = null)
         }) {
-
     }
 }
 
 @Preview
 @Composable
-private fun QuestionBoxWithOneAnswerPreview() {
+private fun QuestionScreenWithOneAnswerPreview() {
     val question = QuestionModel(
         description = "я не знаю",
         variants = listOf("фвфвы", "пися попа", "эщкере"),
@@ -276,7 +347,26 @@ private fun QuestionBoxWithOneAnswerPreview() {
     QuestionScreen(
         question = question,
         onBackHandler = {},
-        checkedStates = mutableListOf(),
+        numberOfQuestion = 0,
+        countOfQuestions = 0,
+        checkedStates = mutableListOf(1),
+        onAnswerButtonClick = {}) {}
+}
+
+@Preview
+@Composable
+private fun QuestionScreenWithTwoAnswerPreview() {
+    val question = QuestionModel(
+        description = "я не знаю",
+        variants = listOf("фвфвы", "пися попа", "эщкере"),
+        answers = listOf(2, 1)
+    )
+    QuestionScreen(
+        question = question,
+        onBackHandler = {},
+        numberOfQuestion = 0,
+        countOfQuestions = 0,
+        checkedStates = mutableListOf(1, 2),
         onAnswerButtonClick = {}) {}
 }
 
@@ -291,6 +381,40 @@ private fun QuestionBoxWithTwoAnswerPreview() {
     QuestionScreen(
         question = question,
         checkedStates = mutableListOf(),
+        numberOfQuestion = 0,
+        countOfQuestions = 0,
         onBackHandler = {},
         onAnswerButtonClick = {}) {}
+}
+
+@Preview
+@Composable
+private fun QuestionBoxWithOneRightAnswerPreview() {
+    val question = QuestionModel(
+        description = "гавно",
+        variants = listOf("1", "3", "2"),
+        answers = listOf(0),
+    )
+
+    QuestionsBox(
+        question = question,
+        checkedStates = listOf(1),
+        showRightAnswer = true,
+        myOnCheckedChange = { index: Int, isChecked: Boolean -> })
+}
+
+@Preview
+@Composable
+private fun QuestionBoxWithTwoRightAnswerPreview() {
+    val question = QuestionModel(
+        description = "гавно",
+        variants = listOf("1", "3", "2"),
+        answers = listOf(0, 1),
+    )
+
+    QuestionsBox(
+        question = question,
+        checkedStates = listOf(1),
+        showRightAnswer = true,
+        myOnCheckedChange = { index: Int, isChecked: Boolean -> })
 }

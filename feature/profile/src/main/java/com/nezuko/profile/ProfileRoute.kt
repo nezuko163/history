@@ -2,12 +2,14 @@ package com.nezuko.profile
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
@@ -19,11 +21,12 @@ private const val TAG = "ProfileRoute"
 
 @Composable
 fun ProfileRoute(
-    onGameHistoryNavigate: () -> Unit,
+    onGameHistoryNavigate: (userId: String) -> Unit,
     modifier: Modifier = Modifier,
     vm: ProfileViewModel = hiltViewModel()
 ) {
     val user by vm.me.collectAsState()
+    val context = LocalContext.current
 
     val cropLauncher = imageCropperLauncher { croppedImageUri ->
         Log.i(TAG, "cropLauncher: croppedUri - $croppedImageUri")
@@ -49,11 +52,15 @@ fun ProfileRoute(
     }
 
 
-    ProfileScreen(modifier,
+    ProfileScreen(
+        modifier = modifier,
         userProfile = user!!,
-        onArrowBackClick = {},
+        onArrowBackClick = {
+            Toast.makeText(context, "не нажимай сюда...", Toast.LENGTH_SHORT).show()
+        },
         onProfileIconClick = {
             pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }
+        },
+        onGameHistoryButtonClick = { onGameHistoryNavigate(user!!.id) }
     )
 }

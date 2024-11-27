@@ -65,7 +65,10 @@ fun DuelScreen(
         onButtonEndGameClick()
     }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { paddingValues ->
+    Scaffold(
+        containerColor = Color.White,
+        modifier = modifier.fillMaxSize()
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .padding(paddingValues)

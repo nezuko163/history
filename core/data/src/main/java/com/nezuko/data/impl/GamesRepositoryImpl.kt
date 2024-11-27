@@ -2,6 +2,7 @@ package com.nezuko.data.impl
 
 import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.getValue
 import com.nezuko.data.di.Dispatcher
 import com.nezuko.data.di.MyDispatchers
 import com.nezuko.domain.model.QuestionModel
@@ -9,6 +10,8 @@ import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.repository.GamesRepository
 import com.nezuko.domain.repository.QuestionRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -26,9 +29,9 @@ class GamesRepositoryImpl @Inject constructor(
 
     private val cachedGames = HashMap<String, RoomModel>()
 
-    override suspend fun findGame(id: String): RoomModel {
-        if (cachedGames.containsKey(id)) {
-            val room = cachedGames[id]!!
+    override suspend fun findGame(gameId: String): RoomModel {
+        if (cachedGames.containsKey(gameId)) {
+            val room = cachedGames[gameId]!!
             if (room.usersAnswers.isNotEmpty()) {
                 return room
             }
@@ -36,18 +39,18 @@ class GamesRepositoryImpl @Inject constructor(
 
         return withContext(IODispatcher) {
             suspendCancellableCoroutine { continuation ->
-                rooms.child(id).get()
+                rooms.child(gameId).get()
                     .addOnSuccessListener { snapshot ->
                         if (!snapshot.exists()) {
-                            Log.e(TAG, "findGame: no game with id = $id")
-                            continuation.resumeWithException(RuntimeException("findGame: no game with id = $id"))
+                            Log.e(TAG, "findGame: no game with id = $gameId")
+                            continuation.resumeWithException(RuntimeException("findGame: no game with id = $gameId"))
                         }
 
                         val room = snapshot.getValue(RoomModel::class.java)
                         if (room == null) {
                             Log.i(TAG, "findGame: room != null")
-                            Log.e(TAG, "findGame: no game with id = $id")
-                            continuation.resumeWithException(RuntimeException("findGame: no game with id = $id"))
+                            Log.e(TAG, "findGame: no game with id = $gameId")
+                            continuation.resumeWithException(RuntimeException("findGame: no game with id = $gameId"))
                             return@addOnSuccessListener
                         }
                         cachedGames[room.id] = room
@@ -102,16 +105,44 @@ class GamesRepositoryImpl @Inject constructor(
         return newRoom
     }
 
-    override fun updateGame(room: RoomModel) {
-        cachedGames[room.id] = room
+    override suspend fun findUserGames(userId: String): List<RoomModel> {
+        return coroutineScope {
+            val first = async { getPlayerGames(userId, true) }
+            val second = async { getPlayerGames(userId, false) }
+
+            first.await() + second.await()
+        }
     }
 
-    override suspend fun analyzeAnswers(room: RoomModel) {
-        val questions = questionRepository.findQuestionsById(room.questionsList)
+    private suspend fun getPlayerGames(userId: String, isFirst: Boolean) =
+        withContext(IODispatcher) {
+            suspendCancellableCoroutine<List<RoomModel>> { continuation ->
+                rooms.orderByChild("player" + if (isFirst) "1" else "2").equalTo(userId).get()
+                    .addOnSuccessListener { snapshot ->
+                        if (!snapshot.exists()) {
+                            continuation.resume(emptyList())
+                            return@addOnSuccessListener
+                        }
 
-        var player1Score = 0
-        var player2Score = 0
+                        val rooms = snapshot.children.mapNotNull {
+                            val room = it.getValue<RoomModel>()
+                            if (room != null) {
+                                cachedGames[room.id] = room
+                            }
+                            room
+                        }
+                        continuation.resume(rooms)
+                    }
+                    .addOnFailureListener { e ->
+                        e.printStackTrace()
+                    }
+                    .addOnCanceledListener {
+                        Log.e(TAG, "createRoom: cancel")
+                    }
+            }
+        }
 
-        
+    override fun updateGame(room: RoomModel) {
+        cachedGames[room.id] = room
     }
 }

@@ -38,6 +38,9 @@ import com.nezuko.auth.registerScreen
 import com.nezuko.duel.navigation.Duel
 import com.nezuko.duel.navigation.duelScreen
 import com.nezuko.duel.navigation.navigateToDuel
+import com.nezuko.gamehistory.navigation.gameHistoryScreen
+import com.nezuko.gamehistory.navigation.navigateToGameHistory
+import com.nezuko.gamestat.navigation.GameStat
 import com.nezuko.gamestat.navigation.gameStatScreen
 import com.nezuko.gamestat.navigation.navigateToGameStat
 import com.nezuko.home.navigation.Home
@@ -76,6 +79,7 @@ fun HistoryApp(
         else -> false
     }
     Scaffold(
+        containerColor = Color.White,
         bottomBar = {
             if (bottomBarVisible) {
                 BottomNavigationBar(
@@ -128,7 +132,9 @@ fun HistoryApp(
                 },
             )
 
-            profileScreen()
+            profileScreen(onGameHistoryNavigate = { userId ->
+                navController.navigateToGameHistory(userId = userId)
+            })
 
             duelScreen(onNavigateToQuestion = {
                 navController.navigateToQuestion {
@@ -151,11 +157,30 @@ fun HistoryApp(
                     Log.i(TAG, "HistoryApp: cur route - $curRoute")
                     Log.i(TAG, "HistoryApp: route - $route")
 
-                    if (curRoute == "com.nezuko.profile.navigation.Profile") {
-                        navController.popBackStack()
-                    } else {
-                        navController.navigateToHome {
-                            popUpTo<Home>()
+
+//                    if (curRoute == "com.nezuko.profile.navigation.Profile") {
+//                        navController.popBackStack()
+//                    } else {
+//                        navController.navigateToHome {
+//                            popUpTo<Home>()
+//                        }
+//                    }
+                    navController.popBackStack()
+                }
+            )
+
+            gameHistoryScreen(
+                onNavigateBack = {
+                    navController.navigateToProfile {
+                        popUpTo<Profile>()
+                    }
+                },
+                onNavigateToGameStat = { room ->
+                    navController.navigateToGameStat(
+                        roomId = room.id
+                    ) {
+                        popUpTo<GameStat> {
+                            inclusive = true
                         }
                     }
                 }

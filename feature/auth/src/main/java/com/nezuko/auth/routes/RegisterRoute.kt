@@ -1,6 +1,5 @@
 package com.nezuko.auth.routes
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +19,5 @@ fun RegisterRoute(
         modifier = modifier
     ) { email, name, password ->
         vm.createUserWithEmailAndPassword(email, name, password)
-        Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
     }
 }

@@ -20,6 +20,5 @@ fun LoginRoute(
         modifier = modifier
     ) { email, password ->
         vm.signInWithEmailAndPassword(email, password)
-        Toast.makeText(context, "asd", Toast.LENGTH_SHORT).show()
     }
 }

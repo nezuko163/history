@@ -2,9 +2,11 @@ package com.nezuko.gamestat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.model.UserProfile
 import com.nezuko.domain.repository.GamesRepository
+import com.nezuko.domain.repository.QuestionRepository
 import com.nezuko.domain.repository.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GameStatViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
-    private val gamesRepository: GamesRepository
+    private val gamesRepository: GamesRepository,
+    private val questionRepository: QuestionRepository
 ) : ViewModel() {
     val me = userProfileRepository.me
 
@@ -41,6 +44,19 @@ class GameStatViewModel @Inject constructor(
     fun findMe() {
         viewModelScope.launch {
             userProfileRepository.findMe()
+        }
+    }
+
+    private val _questions = MutableStateFlow<List<QuestionModel>?>(null)
+    val questions = _questions.asStateFlow()
+
+    fun findQuestions() {
+        if (_room.value == null) return
+
+        viewModelScope.launch {
+            _questions.update {
+                questionRepository.findQuestionsById(_room.value!!.questionsList)
+            }
         }
     }
 }

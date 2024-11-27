@@ -4,7 +4,7 @@ import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 
 interface GamesRepository {
-    suspend fun findGame(id: String): RoomModel
+    suspend fun findGame(gameId: String): RoomModel
     suspend fun createGame(
         playerId1: String,
         playerId2: String,
@@ -12,9 +12,7 @@ interface GamesRepository {
         theme: String = "ALL"
     ): RoomModel
 
-    fun updateGame(room: RoomModel)
+    suspend fun findUserGames(userId: String): List<RoomModel>
 
-    suspend fun analyzeAnswers(
-        room: RoomModel
-    )
+    fun updateGame(room: RoomModel)
 }

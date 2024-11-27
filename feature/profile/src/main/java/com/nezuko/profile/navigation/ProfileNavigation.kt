@@ -15,6 +15,7 @@ fun NavController.navigateToProfile(
 ) = navigate(Profile, navOptions)
 
 fun NavGraphBuilder.profileScreen(
+    onGameHistoryNavigate: (userId: String) -> Unit,
 ) = composable<Profile> {
-    ProfileRoute()
+    ProfileRoute(onGameHistoryNavigate = onGameHistoryNavigate)
 }

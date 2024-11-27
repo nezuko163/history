@@ -2,6 +2,7 @@ package com.nezuko.ui.components
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +22,9 @@ fun ImageFromInet(
     url: Any,
     errorImageResource: Int,
     contentDescription: String = "",
-    crossFade: Boolean = false) {
+    onClick: (() -> Unit)? = null,
+    crossFade: Boolean = false
+) {
 
     Log.i(TAG, "ImageFromInet: url = $url")
 
@@ -32,7 +35,11 @@ fun ImageFromInet(
             .data(url)
             .build(),
         contentDescription = contentDescription,
-        modifier = modifier,
+        modifier = modifier
+            .then(
+                if (onClick == null) Modifier
+                else Modifier.clickable { onClick() }
+            ),
         imageLoader = createImageLoader(context).build(),
         error = painterResource(id = errorImageResource),
         onError = {

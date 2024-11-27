@@ -6,9 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nezuko.auth.Start
 import com.nezuko.home.navigation.Home
@@ -44,9 +47,12 @@ class MainActivity : ComponentActivity() {
                     } else {
                         Home
                     }
-                    HistoryApp(
-                        startDestination = startDestination
-                    )
+                    val LocalScaffoldColor = compositionLocalOf { Color.White }
+                    CompositionLocalProvider(LocalScaffoldColor provides Color.White) {
+                        HistoryApp(
+                            startDestination = startDestination
+                        )
+                    }
                 }
             }
         }
