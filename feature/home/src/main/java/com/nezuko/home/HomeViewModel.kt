@@ -2,7 +2,6 @@ package com.nezuko.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nezuko.domain.model.QuestionModel
 import com.nezuko.domain.model.RoomModel
 import com.nezuko.domain.model.UserProfile
 import com.nezuko.domain.repository.MatchmakingRepository
@@ -44,12 +43,6 @@ class HomeViewModel @Inject constructor(
                 user = userProfile,
                 onStopSearch = onSearchStopped
             )
-        }
-    }
-
-    fun insertQuestion(questionModel: QuestionModel) {
-        viewModelScope.launch {
-            questionRepository.insertQuestion(questionModel)
         }
     }
 }

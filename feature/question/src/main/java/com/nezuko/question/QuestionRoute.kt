@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 
 private const val TAG = "QuestionRoute"
@@ -28,7 +27,6 @@ fun QuestionRoute(
 ) {
     val room by vm.room.collectAsState()
     var roomId by remember { mutableStateOf(room?.id) }
-    val context = LocalContext.current
     val vmQuestions by vm.questions.collectAsState()
     var questions by remember { mutableStateOf(vmQuestions) }
     var numberOfCurrentQuestion by remember { mutableIntStateOf(0) }
@@ -73,8 +71,7 @@ fun QuestionRoute(
                 Log.i(TAG, "QuestionRoute: number - $numberOfCurrentQuestion")
             },
             onBackHandler = {
-                Log.i(TAG, "QuestionRoute: ")
-                vm.endGame()
+                Log.i(TAG, "QuestionRoute: on back")
             }
         )
     }

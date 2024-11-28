@@ -129,12 +129,15 @@ fun GameStatScreen(
                 Spacer(modifier = Modifier.padding(Spacing.default.medium))
 
                 questions.forEach { question ->
+
+                    val usersAnswers =
+                        room.usersAnswers[me.id]?.get(question.id)?.userAnswers ?: emptyList()
                     QuestionCell(
                         modifier = Modifier
                             .background(White)
                             .padding(Spacing.default.medium),
                         question = question,
-                        userAnswers = room.usersAnswers[me.id]!![question.id]!!.userAnswers
+                        userAnswers = usersAnswers
                     )
                 }
             }

@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/auth" />
+            <option value="$PROJECT_DIR$/feature/createQuestion" />
             <option value="$PROJECT_DIR$/feature/duel" />
             <option value="$PROJECT_DIR$/feature/gameHistory" />
             <option value="$PROJECT_DIR$/feature/gameStat" />

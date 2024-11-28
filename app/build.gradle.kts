@@ -65,6 +65,7 @@ dependencies {
     implementation(project(":feature:question"))
     implementation(project(":feature:gameStat"))
     implementation(project(":feature:gameHistory"))
+    implementation(project(":feature:createQuestion"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -54,19 +54,26 @@ class QuestionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun insertQuestion(questionModel: QuestionModel) = withContext(IODispatcher) {
+    override suspend fun insertQuestion(
+        questionModel: QuestionModel,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) = withContext(IODispatcher) {
         suspendCancellableCoroutine<QuestionModel> { continuation ->
             val questionRef = db.getReference("questions").push()
             questionRef.setValue(questionModel.setId(questionRef.key!!))
                 .addOnSuccessListener {
+                    onSuccess()
                     cachedQuestions[questionModel.id] = questionModel
                     continuation.resume(questionModel)
                 }
                 .addOnFailureListener { e ->
+                    onFailure()
                     e.printStackTrace()
                     continuation.resumeWithException(e)
                 }
                 .addOnCanceledListener {
+                    onFailure()
                     continuation.cancel()
                 }
         }

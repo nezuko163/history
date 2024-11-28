@@ -15,6 +15,7 @@ fun NavController.navigateToLearning(
 ) = navigate(Learning, navOptions)
 
 fun NavGraphBuilder.learningScreen(
+    onNavigateToCreateQuestion: () -> Unit
 ) = composable<Learning> {
-    LearningRoute()
+    LearningRoute(onNavigateToCreateQuestion = onNavigateToCreateQuestion)
 }

@@ -35,6 +35,8 @@ import com.nezuko.auth.loginScreen
 import com.nezuko.auth.navigateToLogin
 import com.nezuko.auth.navigateToRegister
 import com.nezuko.auth.registerScreen
+import com.nezuko.createquestion.navigation.createQuestionScreen
+import com.nezuko.createquestion.navigation.navigateToCreateQuestion
 import com.nezuko.duel.navigation.Duel
 import com.nezuko.duel.navigation.duelScreen
 import com.nezuko.duel.navigation.navigateToDuel
@@ -142,7 +144,11 @@ fun HistoryApp(
                 }
             })
 
-            learningScreen()
+            learningScreen(
+                onNavigateToCreateQuestion = {
+                    navController.navigateToCreateQuestion()
+                }
+            )
 
             questionScreen(
                 onNavigateToGameStat = { roomId ->
@@ -185,6 +191,10 @@ fun HistoryApp(
                     }
                 }
             )
+
+            createQuestionScreen(onNavigateBack = {
+                navController.popBackStack()
+            })
         }
     }
 }

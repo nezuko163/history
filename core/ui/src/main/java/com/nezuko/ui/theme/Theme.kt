@@ -42,9 +42,21 @@ fun HistoryTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            dynamicLightColorScheme(context).copy(surface = Color.White)
+            dynamicLightColorScheme(context).copy(
+                surface = Color.White,
+                primary = LightBlue,
+                primaryContainer = LightBlue,
+                background = Color.White,
+            )
         }
-        else -> LightColorScheme.copy(surface = Color.White)
+
+        else -> LightColorScheme.copy(
+            surface = Color.White,
+            primary = LightBlue,
+            primaryContainer = LightBlue,
+            background = Color.White,
+
+        )
 
     }
 
@@ -52,6 +64,7 @@ fun HistoryTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content,
+
     )
 }
 
