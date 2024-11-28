@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nezuko.ui.theme.LightBlue
 import com.nezuko.ui.theme.Spacing
@@ -57,18 +56,6 @@ fun HomeScreen(
                 )
             }
         }
-
-
-        // Элементы под центральным
-        Column(
-            modifier = Modifier.padding(top = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Элемент 1")
-            Text(text = "Элемент 2")
-            Text(text = "Элемент 3")
-        }
-
         // Spacer, заполняющий оставшееся место снизу
         Spacer(modifier = Modifier.weight(1f))
     }
