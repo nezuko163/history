@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +61,7 @@ fun QuestionScreen(
     question: QuestionModel,
     countOfQuestions: Int,
     numberOfQuestion: Int,
+    enabled: Boolean,
     checkedStates: MutableList<Int>,
     onBackHandler: () -> Unit,
     onAnswerButtonClick: (List<Int>) -> Unit,
@@ -114,8 +116,6 @@ fun QuestionScreen(
                     }
                 }
             )
-
-
             Text(
                 text = question.description,
                 Modifier
@@ -130,7 +130,8 @@ fun QuestionScreen(
                 question = question,
                 showRightAnswer = showRightAnswer,
                 checkedStates = checkedStates,
-                myOnCheckedChange = onCheckedChange
+                myOnCheckedChange = onCheckedChange,
+                enabled = enabled
             )
 
             Button(
@@ -138,7 +139,7 @@ fun QuestionScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = Spacing.default.extraLarge),
-                enabled = !showRightAnswer
+                enabled = enabled
             ) {
                 Text(text = "Ответить")
             }
@@ -152,6 +153,7 @@ private fun QuestionsBox(
     question: QuestionModel,
     checkedStates: List<Int>,
     showRightAnswer: Boolean,
+    enabled: Boolean,
     myOnCheckedChange: (index: Int, isChecked: Boolean) -> Unit
 ) {
     Column(
@@ -175,16 +177,16 @@ private fun QuestionsBox(
                             RadioButton(
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = MaterialTheme.colorScheme.primary,
-                                    disabledSelectedColor = if (answersContains && checkedStatesContains) Green else Red
+                                    disabledSelectedColor = if (!showRightAnswer) Gray else if (answersContains && checkedStatesContains) Green else Red
                                 ),
-                                enabled = !showRightAnswer,
+                                enabled = enabled,
                                 selected = checkedStates.contains(index),
                                 onClick = null
                             )
                         },
                         showRightAnswer = showRightAnswer,
                         onClick = {
-                            myOnCheckedChange(index, !checkedStates.contains(index))
+                            if (enabled) myOnCheckedChange(index, !checkedStates.contains(index))
                         })
                 }
             }
@@ -202,15 +204,20 @@ private fun QuestionsBox(
                             Checkbox(
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = MaterialTheme.colorScheme.primary,
-                                    disabledCheckedColor = if (answersContains && checkedStatesContains) Green else Red
+                                    disabledCheckedColor = if (!showRightAnswer) Gray else if (answersContains && checkedStatesContains) Green else Red
                                 ),
-                                enabled = !showRightAnswer,
+                                enabled = enabled,
                                 checked = checkedStates.contains(index),
                                 onCheckedChange = null
                             )
                         },
                         showRightAnswer = showRightAnswer,
-                        onClick = { myOnCheckedChange(index, !checkedStates.contains(index)) })
+                        onClick = {
+                            if (enabled) myOnCheckedChange(
+                                index,
+                                !checkedStates.contains(index)
+                            )
+                        })
                 }
             }
         }
@@ -344,6 +351,7 @@ private fun QuestionScreenWithOneAnswerPreview() {
         numberOfQuestion = 0,
         countOfQuestions = 0,
         checkedStates = mutableListOf(1),
+        enabled = true,
         onAnswerButtonClick = {}) {}
 }
 
@@ -361,6 +369,7 @@ private fun QuestionScreenWithTwoAnswerPreview() {
         numberOfQuestion = 0,
         countOfQuestions = 0,
         checkedStates = mutableListOf(1, 2),
+        enabled = false,
         onAnswerButtonClick = {}) {}
 }
 
@@ -378,6 +387,7 @@ private fun QuestionBoxWithTwoAnswerPreview() {
         numberOfQuestion = 0,
         countOfQuestions = 0,
         onBackHandler = {},
+        enabled = false,
         onAnswerButtonClick = {}) {}
 }
 
@@ -394,6 +404,7 @@ private fun QuestionBoxWithOneRightAnswerPreview() {
         question = question,
         checkedStates = listOf(1),
         showRightAnswer = true,
+        enabled = false,
         myOnCheckedChange = { index: Int, isChecked: Boolean -> })
 }
 
@@ -410,5 +421,6 @@ private fun QuestionBoxWithTwoRightAnswerPreview() {
         question = question,
         checkedStates = listOf(1),
         showRightAnswer = true,
+        enabled = false,
         myOnCheckedChange = { index: Int, isChecked: Boolean -> })
 }

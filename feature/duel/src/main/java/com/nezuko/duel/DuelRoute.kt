@@ -26,6 +26,7 @@ fun DuelRoute(
     val questions by vm.questions.collectAsState()
 
     if (currentRoom == null) {
+
         Box(modifier = modifier.fillMaxSize()) {
             Text(text = "что?", modifier = Modifier.align(Alignment.Center))
         }

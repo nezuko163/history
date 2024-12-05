@@ -157,7 +157,6 @@ fun HomeRoute(
         vm.startSearch(
             userProfile = me!!,
             onRoomCreated = { room ->
-                Toast.makeText(context, room.toString(), Toast.LENGTH_SHORT).show()
                 onNavigateToDuel(room)
             },
             onGameEnd = { room ->

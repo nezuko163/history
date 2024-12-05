@@ -54,6 +54,7 @@ import com.nezuko.learning.navigation.navigateToLearning
 import com.nezuko.profile.navigation.Profile
 import com.nezuko.profile.navigation.navigateToProfile
 import com.nezuko.profile.navigation.profileScreen
+import com.nezuko.question.navigation.Question
 import com.nezuko.question.navigation.navigateToQuestion
 import com.nezuko.question.navigation.questionScreen
 import com.nezuko.ui.theme.GrayText
@@ -153,7 +154,9 @@ fun HistoryApp(
             questionScreen(
                 onNavigateToGameStat = { roomId ->
                     Log.i(TAG, "HistoryApp: onNavigateToGameStat: room - $roomId ")
-                    navController.navigateToGameStat(roomId)
+                    navController.navigateToGameStat(roomId) {
+                        popUpTo<Question> { inclusive = true }
+                    }
                 }
             )
 
@@ -171,7 +174,9 @@ fun HistoryApp(
 //                            popUpTo<Home>()
 //                        }
 //                    }
-                    navController.popBackStack()
+                    navController.navigateToHome {
+                        popUpTo<Home> { inclusive = true }
+                    }
                 }
             )
 
